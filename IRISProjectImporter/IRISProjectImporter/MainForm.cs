@@ -30,7 +30,8 @@ namespace IRISProjectImporter
             {
                 try
                 {
-                    string connection = SQLManager.GetConnectionString(
+                    SQLManager sqlManager = new SQLManager();
+                    string connection = sqlManager.GetConnectionString(
                         hostTextBox.Text,
                         portTextBox.Text,
                         loginTextBox.Text,
@@ -39,7 +40,7 @@ namespace IRISProjectImporter
                     BeginInvoke(new Action(() =>
                     {
                         dbNameComboBox.Items.Clear();
-                        dbNameComboBox.Items.AddRange(SQLManager.GetDatabaseNames(connection));
+                        dbNameComboBox.Items.AddRange(sqlManager.GetDatabaseNames(connection));
                     }));
                 }
                 catch (Exception ex)
@@ -67,7 +68,9 @@ namespace IRISProjectImporter
             {
                 try
                 {
-                    string[] picFilePaths = PICFileManager.GetPICFilePaths(pathTextBox.Text);
+                    // Getting PIC_*.xml files paths
+                    PICFileManager picFileManager = new PICFileManager();
+                    string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
                     if (picFilePaths.Length > 0)
                     {
                         for (int i = 0; i < picFilePaths.Length; i++)
@@ -76,6 +79,44 @@ namespace IRISProjectImporter
                             Console.WriteLine(pic.IndexXmlFilePath);
                         }
                     }
+
+                    //for (int i = 0; i < 1; i++)
+                    //{
+                    //    SQLManager sqlManager = new SQLManager();
+                    //    string connectionString = sqlManager.GetConnectionString(
+                    //        hostTextBox.Text,
+                    //        portTextBox.Text,
+                    //        loginTextBox.Text,
+                    //        passwordTextBox.Text,
+                    //        dbNameComboBox.SelectedItem.ToString());
+
+                    //    XmlFileReader xmlReader = new XmlFileReader();
+                    //    string indexXmlFilePath = new PICFileInfo(picFilePaths[i]).IndexXmlFilePath;
+                    //    foreach (IndexFileInfo index in xmlReader.ReadAllIndexFileInfo(indexXmlFilePath))
+                    //    {
+                    //        PICFileInfo[] picFiles = xmlReader.ReadAllPicFileInfo(picFilePaths[i]).ToArray();
+
+                    //        sqlManager.InsertIndexFileWithPICs(index, picFiles, connectionString);
+                    //    }
+                    //}
+
+                    SQLManager sqlManager = new SQLManager();
+                    string connectionString = sqlManager.GetConnectionString(
+                        hostTextBox.Text,
+                        portTextBox.Text,
+                        loginTextBox.Text,
+                        passwordTextBox.Text,
+                        "iris_project_importer");
+
+                    XmlFileReader xmlReader = new XmlFileReader();
+                    string indexXmlFilePath = new PICFileInfo(picFilePaths[0]).IndexXmlFilePath;
+
+                    IndexFileInfo index = xmlReader.ReadIndexFileInfo(indexXmlFilePath);
+                    sqlManager.test(index, connectionString);
+
+
+
+
                 }
                 catch (Exception ex)
                 {

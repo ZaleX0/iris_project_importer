@@ -9,12 +9,12 @@ namespace IRISProjectImporter
 {
     class PICFileManager
     {
-        public static string[] GetPICFilePaths(string directoryPath)
+        public string[] GetPICFilePaths(string directoryPath)
         {
             return Directory.GetFiles(directoryPath, "PIC_*.xml", SearchOption.AllDirectories);
         }
 
-        public static string GetIndexFile(string picFilePath)
+        public string GetIndexFilePath(string picFilePath)
         {
             try
             {
@@ -26,7 +26,6 @@ namespace IRISProjectImporter
                 throw new IndexOutOfRangeException("Index.xml file missing.");
             }
         }
-
         
     }
 }
