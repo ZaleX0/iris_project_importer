@@ -15,7 +15,6 @@ namespace IRISProjectImporter
             reader.ReadToFollowing(element);
             return reader.ReadElementContentAsString();
         }
-
         public string GetElementContent(string xmlFilePath, string element, params string[] moreElements)
         {
             XmlReader reader = XmlReader.Create(xmlFilePath);
@@ -27,6 +26,40 @@ namespace IRISProjectImporter
             return reader.ReadElementContentAsString();
         }
 
+
+
+        public IEnumerable<IndexFileInfo> ReadAllIndexFileInfo(string xmlFilePath)
+        {
+            XmlReader r = XmlReader.Create(xmlFilePath);
+            while (r.ReadToFollowing("VNK"))
+            {
+                IndexFileInfo index = new IndexFileInfo(xmlFilePath);
+                index.vnk           = r.ReadElementContentAsString();   r.Read();
+                index.nnk           = r.ReadElementContentAsString();   r.Read();
+                index.von_stat      = r.ReadElementContentAsInt();      r.Read();
+                index.bis_stat      = r.ReadElementContentAsInt();      r.Read();
+                index.richtung      = r.ReadElementContentAsString();   r.Read();
+                index.cam           = r.ReadElementContentAsString();   r.Read();
+                index.datum         = r.ReadElementContentAsString();   r.Read();
+                index.version       = r.ReadElementContentAsString();   r.Read();
+                index.bemerkung     = r.ReadElementContentAsString();   r.Read();
+                index.volume        = r.ReadElementContentAsString();   r.Read();
+                index.picpath       = r.ReadElementContentAsString();   r.Read();
+                index.v_seither_km  = r.ReadElementContentAsInt();      r.Read();
+                index.n_seither_km  = r.ReadElementContentAsInt();      r.Read();
+                index.abs           = r.ReadElementContentAsInt();      r.Read();
+                index.str_bez       = r.ReadElementContentAsString();   r.Read();
+                index.laenge        = r.ReadElementContentAsInt();      r.Read();
+                index.kierunek      = r.ReadElementContentAsString();   r.Read();
+                index.nrodc         = r.ReadElementContentAsString();   r.Read();
+                index.km_lokp       = r.ReadElementContentAsInt();      r.Read();
+                index.km_lokk       = r.ReadElementContentAsInt();      r.Read();
+                index.km_globp      = r.ReadElementContentAsInt();      r.Read();
+                index.km_globk      = r.ReadElementContentAsInt();      r.Read();
+                index.phoml         = r.ReadElementContentAsString();   r.Read();
+                yield return index;
+            }
+        }
         public IEnumerable<PICFileInfo> ReadAllPicFileInfo(string xmlFilePath)
         {
             XmlReader r = XmlReader.Create(xmlFilePath);
@@ -65,81 +98,46 @@ namespace IRISProjectImporter
             }
         }
 
-        public IEnumerable<IndexFileInfo> ReadAllIndexFileInfo(string xmlFilePath)
+
+
+        public IndexFileInfo[] IndexFileInfoArray(string xmlFilePath)
         {
             XmlReader r = XmlReader.Create(xmlFilePath);
+            List<IndexFileInfo> list = new List<IndexFileInfo>();
             while (r.ReadToFollowing("VNK"))
             {
                 IndexFileInfo index = new IndexFileInfo(xmlFilePath);
-                index.vnk           = r.ReadElementContentAsString();   r.Read();
-                index.nnk           = r.ReadElementContentAsString();   r.Read();
-                index.von_stat      = r.ReadElementContentAsInt();      r.Read();
-                index.bis_stat      = r.ReadElementContentAsInt();      r.Read();
-                index.richtung      = r.ReadElementContentAsString();   r.Read();
-                index.cam           = r.ReadElementContentAsString();   r.Read();
-                index.datum         = r.ReadElementContentAsString();   r.Read();
-                index.version       = r.ReadElementContentAsString();   r.Read();
-                index.bemerkung     = r.ReadElementContentAsString();   r.Read();
-                index.volume        = r.ReadElementContentAsString();   r.Read();
-                index.picpath       = r.ReadElementContentAsString();   r.Read();
-                index.v_seither_km  = r.ReadElementContentAsInt();      r.Read();
-                index.n_seither_km  = r.ReadElementContentAsInt();      r.Read();
-                index.abs           = r.ReadElementContentAsInt();      r.Read();
-                index.str_bez       = r.ReadElementContentAsString();   r.Read();
-                index.laenge        = r.ReadElementContentAsInt();      r.Read();
-                index.kierunek      = r.ReadElementContentAsString();   r.Read();
-                index.nrodc         = r.ReadElementContentAsString();   r.Read();
-                index.km_lokp       = r.ReadElementContentAsInt();      r.Read();
-                index.km_lokk       = r.ReadElementContentAsInt();      r.Read();
-                index.km_globp      = r.ReadElementContentAsInt();      r.Read();
-                index.km_globk      = r.ReadElementContentAsInt();      r.Read();
-                index.phoml         = r.ReadElementContentAsString();   r.Read();
-                yield return index;
+                index.vnk = r.ReadElementContentAsString(); r.Read();
+                index.nnk = r.ReadElementContentAsString(); r.Read();
+                index.von_stat = r.ReadElementContentAsInt(); r.Read();
+                index.bis_stat = r.ReadElementContentAsInt(); r.Read();
+                index.richtung = r.ReadElementContentAsString(); r.Read();
+                index.cam = r.ReadElementContentAsString(); r.Read();
+                index.datum = r.ReadElementContentAsString(); r.Read();
+                index.version = r.ReadElementContentAsString(); r.Read();
+                index.bemerkung = r.ReadElementContentAsString(); r.Read();
+                index.volume = r.ReadElementContentAsString(); r.Read();
+                index.picpath = r.ReadElementContentAsString(); r.Read();
+                index.v_seither_km = r.ReadElementContentAsInt(); r.Read();
+                index.n_seither_km = r.ReadElementContentAsInt(); r.Read();
+                index.abs = r.ReadElementContentAsInt(); r.Read();
+                index.str_bez = r.ReadElementContentAsString(); r.Read();
+                index.laenge = r.ReadElementContentAsInt(); r.Read();
+                index.kierunek = r.ReadElementContentAsString(); r.Read();
+                index.nrodc = r.ReadElementContentAsString(); r.Read();
+                index.km_lokp = r.ReadElementContentAsInt(); r.Read();
+                index.km_lokk = r.ReadElementContentAsInt(); r.Read();
+                index.km_globp = r.ReadElementContentAsInt(); r.Read();
+                index.km_globk = r.ReadElementContentAsInt(); r.Read();
+                index.phoml = r.ReadElementContentAsString(); r.Read();
+                list.Add(index);
             }
+            return list.ToArray();
         }
-
-        public IndexFileInfo ReadIndexFileInfo(string xmlFilePath)
+        public PICFileInfo[] PicFileInfoArray(string xmlFilePath)
         {
             XmlReader r = XmlReader.Create(xmlFilePath);
-            r.ReadToFollowing("VNK");
-            IndexFileInfo index = new IndexFileInfo(xmlFilePath);
-            index.vnk = r.ReadElementContentAsString(); r.Read();
-            index.nnk = r.ReadElementContentAsString(); r.Read();
-            index.von_stat = r.ReadElementContentAsInt(); r.Read();
-            index.bis_stat = r.ReadElementContentAsInt(); r.Read();
-            index.richtung = r.ReadElementContentAsString(); r.Read();
-            index.cam = r.ReadElementContentAsString(); r.Read();
-            index.datum = r.ReadElementContentAsString(); r.Read();
-            index.version = r.ReadElementContentAsString(); r.Read();
-            index.bemerkung = r.ReadElementContentAsString(); r.Read();
-            index.volume = r.ReadElementContentAsString(); r.Read();
-            index.picpath = r.ReadElementContentAsString(); r.Read();
-            index.v_seither_km = r.ReadElementContentAsInt(); r.Read();
-            index.n_seither_km = r.ReadElementContentAsInt(); r.Read();
-            index.abs = r.ReadElementContentAsInt(); r.Read();
-            index.str_bez = r.ReadElementContentAsString(); r.Read();
-            index.laenge = r.ReadElementContentAsInt(); r.Read();
-            index.kierunek = r.ReadElementContentAsString(); r.Read();
-            index.nrodc = r.ReadElementContentAsString(); r.Read();
-            index.km_lokp = r.ReadElementContentAsInt(); r.Read();
-            index.km_lokk = r.ReadElementContentAsInt(); r.Read();
-            index.km_globp = r.ReadElementContentAsInt(); r.Read();
-            index.km_globk = r.ReadElementContentAsInt(); r.Read();
-            index.phoml = r.ReadElementContentAsString(); r.Read();
-            return index;
-        }
-
-
-
-
-
-
-
-
-        public List<PICFileInfo> ListOfPicFileInfo(string xmlFilePath)
-        {
             List<PICFileInfo> list = new List<PICFileInfo>();
-            XmlReader r = XmlReader.Create(xmlFilePath);
             while (r.ReadToFollowing("IDDROGI"))
             {
                 PICFileInfo pic = new PICFileInfo(xmlFilePath);
@@ -173,7 +171,7 @@ namespace IRISProjectImporter
                 pic.pic_id = r.ReadElementContentAsDouble(); r.Read();
                 list.Add(pic);
             }
-            return list;
+            return list.ToArray();
         }
     }
 }

@@ -18,6 +18,7 @@ namespace IRISProjectImporter
         }
 
         public string pic_data_id { get; set; }
+        public string index_data_id { get; set; }
 
         public string id_drogi { get; set; }
         public string vnk { get; set; }

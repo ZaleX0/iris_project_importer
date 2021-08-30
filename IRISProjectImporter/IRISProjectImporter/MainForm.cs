@@ -63,58 +63,39 @@ namespace IRISProjectImporter
 
         private async void startButton_Click(object sender, EventArgs e)
         {
+            // Disabling button to prevent spamming
             startButton.Enabled = false;
+
             await Task.Run(() =>
             {
                 try
                 {
-                    // Getting PIC_*.xml files paths
+                    XmlFileReader xmlReader = new XmlFileReader();
+
+                    // Getting PIC_*.xml file paths
                     PICFileManager picFileManager = new PICFileManager();
+                    IndexFileManager indexFileManager = new IndexFileManager();
                     string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
-                    if (picFilePaths.Length > 0)
+                    string[] indexFilePaths = indexFileManager.GetIndexFilePaths(picFilePaths);
+
+                    for (int i = 0; i < indexFilePaths.Length; i++)
                     {
-                        for (int i = 0; i < picFilePaths.Length; i++)
-                        {
-                            PICFileInfo pic = new PICFileInfo(picFilePaths[i]);
-                            Console.WriteLine(pic.IndexXmlFilePath);
-                        }
+                        #region SQLManager and connectionString
+                        SQLManager sqlManager = new SQLManager();
+                        string connectionString = sqlManager.GetConnectionString(
+                            hostTextBox.Text,
+                            portTextBox.Text,
+                            loginTextBox.Text,
+                            passwordTextBox.Text,
+                            "iris_project_importer");
+                        #endregion
+
+                        string[] picsPerIndexPath = picFileManager.GetPICFilePaths(indexFilePaths[i]);
+
+                        sqlManager.InsertIndexWithPICs(indexFilePaths[i], picsPerIndexPath, connectionString);
                     }
 
-                    //for (int i = 0; i < 1; i++)
-                    //{
-                    //    SQLManager sqlManager = new SQLManager();
-                    //    string connectionString = sqlManager.GetConnectionString(
-                    //        hostTextBox.Text,
-                    //        portTextBox.Text,
-                    //        loginTextBox.Text,
-                    //        passwordTextBox.Text,
-                    //        dbNameComboBox.SelectedItem.ToString());
-
-                    //    XmlFileReader xmlReader = new XmlFileReader();
-                    //    string indexXmlFilePath = new PICFileInfo(picFilePaths[i]).IndexXmlFilePath;
-                    //    foreach (IndexFileInfo index in xmlReader.ReadAllIndexFileInfo(indexXmlFilePath))
-                    //    {
-                    //        PICFileInfo[] picFiles = xmlReader.ReadAllPicFileInfo(picFilePaths[i]).ToArray();
-
-                    //        sqlManager.InsertIndexFileWithPICs(index, picFiles, connectionString);
-                    //    }
-                    //}
-
-                    SQLManager sqlManager = new SQLManager();
-                    string connectionString = sqlManager.GetConnectionString(
-                        hostTextBox.Text,
-                        portTextBox.Text,
-                        loginTextBox.Text,
-                        passwordTextBox.Text,
-                        "iris_project_importer");
-
-                    XmlFileReader xmlReader = new XmlFileReader();
-                    string indexXmlFilePath = new PICFileInfo(picFilePaths[0]).IndexXmlFilePath;
-
-                    IndexFileInfo index = xmlReader.ReadIndexFileInfo(indexXmlFilePath);
-                    sqlManager.test(index, connectionString);
-
-
+                    
 
 
                 }
@@ -124,6 +105,7 @@ namespace IRISProjectImporter
                 }
                 finally
                 {
+                    // Enabling button
                     BeginInvoke(new Action(() => startButton.Enabled = true));
                 }
             });
