@@ -43,12 +43,13 @@ namespace IRISProjectImporter
             this.folderBrowserDialogButton = new System.Windows.Forms.Button();
             this.databaseLabel = new System.Windows.Forms.Label();
             this.pathLabel = new System.Windows.Forms.Label();
-            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.logTextBox = new System.Windows.Forms.RichTextBox();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.closeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.startButton = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
+            this.checkBox1 = new System.Windows.Forms.CheckBox();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -92,34 +93,30 @@ namespace IRISProjectImporter
             // 
             this.hostTextBox.Location = new System.Drawing.Point(72, 34);
             this.hostTextBox.Name = "hostTextBox";
-            this.hostTextBox.Size = new System.Drawing.Size(219, 20);
+            this.hostTextBox.Size = new System.Drawing.Size(280, 20);
             this.hostTextBox.TabIndex = 0;
-            this.hostTextBox.Text = "localhost";
             // 
             // portTextBox
             // 
             this.portTextBox.Location = new System.Drawing.Point(72, 60);
             this.portTextBox.Name = "portTextBox";
-            this.portTextBox.Size = new System.Drawing.Size(219, 20);
+            this.portTextBox.Size = new System.Drawing.Size(280, 20);
             this.portTextBox.TabIndex = 1;
-            this.portTextBox.Text = "5432";
             // 
             // loginTextBox
             // 
             this.loginTextBox.Location = new System.Drawing.Point(72, 86);
             this.loginTextBox.Name = "loginTextBox";
-            this.loginTextBox.Size = new System.Drawing.Size(219, 20);
+            this.loginTextBox.Size = new System.Drawing.Size(280, 20);
             this.loginTextBox.TabIndex = 2;
-            this.loginTextBox.Text = "postgres";
             // 
             // passwordTextBox
             // 
             this.passwordTextBox.Location = new System.Drawing.Point(72, 112);
             this.passwordTextBox.Name = "passwordTextBox";
             this.passwordTextBox.PasswordChar = '*';
-            this.passwordTextBox.Size = new System.Drawing.Size(219, 20);
+            this.passwordTextBox.Size = new System.Drawing.Size(280, 20);
             this.passwordTextBox.TabIndex = 3;
-            this.passwordTextBox.Text = "zaq12wsx";
             // 
             // dbNameComboBox
             // 
@@ -127,14 +124,14 @@ namespace IRISProjectImporter
             this.dbNameComboBox.FormattingEnabled = true;
             this.dbNameComboBox.Location = new System.Drawing.Point(72, 152);
             this.dbNameComboBox.Name = "dbNameComboBox";
-            this.dbNameComboBox.Size = new System.Drawing.Size(219, 21);
+            this.dbNameComboBox.Size = new System.Drawing.Size(280, 21);
             this.dbNameComboBox.TabIndex = 4;
             // 
             // reloadDbButton
             // 
-            this.reloadDbButton.Location = new System.Drawing.Point(297, 150);
+            this.reloadDbButton.Location = new System.Drawing.Point(358, 150);
             this.reloadDbButton.Name = "reloadDbButton";
-            this.reloadDbButton.Size = new System.Drawing.Size(75, 23);
+            this.reloadDbButton.Size = new System.Drawing.Size(114, 23);
             this.reloadDbButton.TabIndex = 6;
             this.reloadDbButton.Text = "Reload";
             this.reloadDbButton.UseVisualStyleBackColor = true;
@@ -144,14 +141,14 @@ namespace IRISProjectImporter
             // 
             this.pathTextBox.Location = new System.Drawing.Point(72, 179);
             this.pathTextBox.Name = "pathTextBox";
-            this.pathTextBox.Size = new System.Drawing.Size(219, 20);
+            this.pathTextBox.Size = new System.Drawing.Size(280, 20);
             this.pathTextBox.TabIndex = 5;
             // 
             // folderBrowserDialogButton
             // 
-            this.folderBrowserDialogButton.Location = new System.Drawing.Point(297, 177);
+            this.folderBrowserDialogButton.Location = new System.Drawing.Point(358, 177);
             this.folderBrowserDialogButton.Name = "folderBrowserDialogButton";
-            this.folderBrowserDialogButton.Size = new System.Drawing.Size(75, 23);
+            this.folderBrowserDialogButton.Size = new System.Drawing.Size(114, 23);
             this.folderBrowserDialogButton.TabIndex = 7;
             this.folderBrowserDialogButton.Text = "...";
             this.folderBrowserDialogButton.UseVisualStyleBackColor = true;
@@ -175,14 +172,14 @@ namespace IRISProjectImporter
             this.pathLabel.TabIndex = 0;
             this.pathLabel.Text = "Path:";
             // 
-            // richTextBox1
+            // logTextBox
             // 
-            this.richTextBox1.Location = new System.Drawing.Point(12, 248);
-            this.richTextBox1.Name = "richTextBox1";
-            this.richTextBox1.ReadOnly = true;
-            this.richTextBox1.Size = new System.Drawing.Size(360, 136);
-            this.richTextBox1.TabIndex = 14;
-            this.richTextBox1.Text = "sample text";
+            this.logTextBox.Location = new System.Drawing.Point(12, 248);
+            this.logTextBox.Name = "logTextBox";
+            this.logTextBox.ReadOnly = true;
+            this.logTextBox.Size = new System.Drawing.Size(460, 201);
+            this.logTextBox.TabIndex = 14;
+            this.logTextBox.Text = "";
             // 
             // menuStrip1
             // 
@@ -190,7 +187,7 @@ namespace IRISProjectImporter
             this.fileToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
-            this.menuStrip1.Size = new System.Drawing.Size(384, 24);
+            this.menuStrip1.Size = new System.Drawing.Size(484, 24);
             this.menuStrip1.TabIndex = 15;
             this.menuStrip1.Text = "menuStrip1";
             // 
@@ -205,15 +202,15 @@ namespace IRISProjectImporter
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
             // startButton
             // 
-            this.startButton.Location = new System.Drawing.Point(297, 219);
+            this.startButton.Location = new System.Drawing.Point(358, 219);
             this.startButton.Name = "startButton";
-            this.startButton.Size = new System.Drawing.Size(75, 23);
+            this.startButton.Size = new System.Drawing.Size(114, 23);
             this.startButton.TabIndex = 8;
             this.startButton.Text = "Start";
             this.startButton.UseVisualStyleBackColor = true;
@@ -223,17 +220,31 @@ namespace IRISProjectImporter
             // 
             this.progressBar.Location = new System.Drawing.Point(12, 219);
             this.progressBar.Name = "progressBar";
-            this.progressBar.Size = new System.Drawing.Size(279, 23);
+            this.progressBar.Size = new System.Drawing.Size(340, 23);
+            this.progressBar.Style = System.Windows.Forms.ProgressBarStyle.Continuous;
             this.progressBar.TabIndex = 0;
+            // 
+            // checkBox1
+            // 
+            this.checkBox1.AutoSize = true;
+            this.checkBox1.Checked = true;
+            this.checkBox1.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.checkBox1.Location = new System.Drawing.Point(376, 36);
+            this.checkBox1.Name = "checkBox1";
+            this.checkBox1.Size = new System.Drawing.Size(77, 17);
+            this.checkBox1.TabIndex = 16;
+            this.checkBox1.Text = "Remember";
+            this.checkBox1.UseVisualStyleBackColor = true;
             // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(384, 397);
+            this.ClientSize = new System.Drawing.Size(484, 461);
+            this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.startButton);
-            this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.logTextBox);
             this.Controls.Add(this.pathLabel);
             this.Controls.Add(this.databaseLabel);
             this.Controls.Add(this.folderBrowserDialogButton);
@@ -277,12 +288,13 @@ namespace IRISProjectImporter
         private System.Windows.Forms.Button folderBrowserDialogButton;
         private System.Windows.Forms.Label databaseLabel;
         private System.Windows.Forms.Label pathLabel;
-        private System.Windows.Forms.RichTextBox richTextBox1;
+        private System.Windows.Forms.RichTextBox logTextBox;
         private System.Windows.Forms.MenuStrip menuStrip1;
         private System.Windows.Forms.ToolStripMenuItem fileToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem closeToolStripMenuItem;
         private System.Windows.Forms.Button startButton;
         private System.Windows.Forms.ProgressBar progressBar;
+        private System.Windows.Forms.CheckBox checkBox1;
     }
 }
 

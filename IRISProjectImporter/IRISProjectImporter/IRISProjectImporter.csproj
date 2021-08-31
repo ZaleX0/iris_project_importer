@@ -91,6 +91,7 @@
     </Compile>
     <Compile Include="PICFileInfo.cs" />
     <Compile Include="Program.cs" />
+    <Compile Include="ProgressBarManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SQLManager.cs" />
     <Compile Include="PICFileManager.cs" />

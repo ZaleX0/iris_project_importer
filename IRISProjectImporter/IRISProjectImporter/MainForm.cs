@@ -13,39 +13,63 @@ namespace IRISProjectImporter
 {
     public partial class MainForm : Form
     {
+
+        Logger _logger;
+        ProgressBarManager _pbm;
+
         public MainForm()
         {
             InitializeComponent();
 
-            
+            _logger = new Logger(logTextBox);
+            _pbm = new ProgressBarManager(progressBar);
 
-            // TODO: DELETE THIS
+            // TODO: zapamietac dane logowania
+            hostTextBox.Text = "localhost";
+            portTextBox.Text = "5432";
+            loginTextBox.Text = "postgres";
+            passwordTextBox.Text = "zaq12wsx";
             pathTextBox.Text = "C:\\Data_test\\IRISProjectImporter\\dane_test\\zdp_poznan";
-
+            dbNameComboBox.Items.Add("iris_project_importer");
+            dbNameComboBox.SelectedIndex = 0;
         }
 
         private async void reloadDbButton_Click(object sender, EventArgs e)
         {
+            _logger.Log("Reloading databases...");
+
+            reloadDbButton.Enabled = false;
+            dbNameComboBox.Items.Clear();
             await Task.Run(() =>
             {
+                #region SQLManager and connectionString
+                SQLManager sqlManager = new SQLManager();
+                string connectionString = sqlManager.GetConnectionString(
+                    hostTextBox.Text,
+                    portTextBox.Text,
+                    loginTextBox.Text,
+                    passwordTextBox.Text,
+                    "postgres");
+                #endregion
+
                 try
                 {
-                    SQLManager sqlManager = new SQLManager();
-                    string connection = sqlManager.GetConnectionString(
-                        hostTextBox.Text,
-                        portTextBox.Text,
-                        loginTextBox.Text,
-                        passwordTextBox.Text,
-                        "postgres");
+                    string[] dbNames = sqlManager.GetDatabaseNames(connectionString);
                     BeginInvoke(new Action(() =>
                     {
-                        dbNameComboBox.Items.Clear();
-                        dbNameComboBox.Items.AddRange(sqlManager.GetDatabaseNames(connection));
+                        dbNameComboBox.Items.AddRange(dbNames);
+                        dbNameComboBox.SelectedIndex = 0;
+                        _logger.Log("Databases realoaded.");
                     }));
                 }
                 catch (Exception ex)
                 {
+                    _logger.Log(ex.Message);
                     MessageBox.Show(ex.Message);
+                }
+                finally
+                {
+                    BeginInvoke(new Action(() => reloadDbButton.Enabled = true));
                 }
             });
         }
@@ -57,7 +81,9 @@ namespace IRISProjectImporter
             folderBrowserDialog.ShowDialog();
             if (folderBrowserDialog.SelectedPath != "")
             {
-                pathTextBox.Text = folderBrowserDialog.SelectedPath;
+                string path = folderBrowserDialog.SelectedPath;
+                pathTextBox.Text = path;
+                _logger.Log($"Selected path: {folderBrowserDialog.SelectedPath}");
             }
         }
 
@@ -65,48 +91,66 @@ namespace IRISProjectImporter
         {
             // Disabling button to prevent spamming
             startButton.Enabled = false;
-
+            reloadDbButton.Enabled = false;
             await Task.Run(() =>
             {
                 try
                 {
-                    XmlFileReader xmlReader = new XmlFileReader();
+                    #region SQLManager, dbName and connectionString
+                    SQLManager sqlManager = new SQLManager(_logger, _pbm);
+                    string dbName = (string) Invoke(new Func<string>(() => dbNameComboBox.Text));
+                    string connectionString = sqlManager.GetConnectionString(
+                        hostTextBox.Text,
+                        portTextBox.Text,
+                        loginTextBox.Text,
+                        passwordTextBox.Text,
+                        dbName);
+                    #endregion
 
-                    // Getting PIC_*.xml file paths
-                    PICFileManager picFileManager = new PICFileManager();
-                    IndexFileManager indexFileManager = new IndexFileManager();
-                    string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
-                    string[] indexFilePaths = indexFileManager.GetIndexFilePaths(picFilePaths);
-
-                    for (int i = 0; i < indexFilePaths.Length; i++)
+                    if (!dbName.Equals(""))
                     {
-                        #region SQLManager and connectionString
-                        SQLManager sqlManager = new SQLManager();
-                        string connectionString = sqlManager.GetConnectionString(
-                            hostTextBox.Text,
-                            portTextBox.Text,
-                            loginTextBox.Text,
-                            passwordTextBox.Text,
-                            "iris_project_importer");
+                        XmlFileReader xmlReader = new XmlFileReader();
+
+                        // Getting PIC_*.xml file paths
+                        PICFileManager picFileManager = new PICFileManager();
+                        IndexFileManager indexFileManager = new IndexFileManager();
+                        string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
+                        string[] indexFilePaths = indexFileManager.GetIndexFilePaths(picFilePaths);
+
+                        #region Logger and ProgressBarManager Code
+                        _pbm.SetProgressBarValue(0);
+                        _pbm.SetProgressBar(0, (indexFilePaths.Length + picFilePaths.Length) * 10, 10);
                         #endregion
 
-                        string[] picsPerIndexPath = picFileManager.GetPICFilePaths(indexFilePaths[i]);
-
-                        sqlManager.InsertIndexWithPICs(indexFilePaths[i], picsPerIndexPath, connectionString);
+                        for (int i = 0; i < indexFilePaths.Length; i++)
+                        {
+                            string[] picsPerIndexPath = picFileManager.GetPICFilePaths(indexFilePaths[i]);
+                            sqlManager.InsertIndexWithPICs(indexFilePaths[i], picsPerIndexPath, connectionString);
+                            _pbm.StepProgressBar();
+                        }
+                    }
+                    else
+                    {
+                        _logger.Log("No Database selected.");
                     }
 
-                    
 
 
                 }
                 catch (Exception ex)
                 {
+                    _logger.Log(ex.StackTrace);
+                    _logger.Log(ex.Message);
                     MessageBox.Show(ex.Message);
                 }
                 finally
                 {
                     // Enabling button
-                    BeginInvoke(new Action(() => startButton.Enabled = true));
+                    BeginInvoke(new Action(() =>
+                    {
+                        startButton.Enabled = true;
+                        reloadDbButton.Enabled = true;
+                    }));
                 }
             });
         }

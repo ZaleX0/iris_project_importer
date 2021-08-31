@@ -10,6 +10,21 @@ namespace IRISProjectImporter
 {
     class SQLManager
     {
+        readonly bool _log;
+        readonly Logger _logger;
+        readonly ProgressBarManager _progressBarManager;
+        public SQLManager()
+        {
+            _log = false;
+        }
+        public SQLManager(Logger logger, ProgressBarManager pbm)
+        {
+            _log = true;
+            _logger = logger;
+            _progressBarManager = pbm;
+        }
+
+
         public string GetConnectionString(string host, string port, string login, string password, string dbName)
         {
             return string.Format("Server={0};Port={1};User Id={2};Password={3};Database={4};Timeout={5};",
@@ -39,63 +54,6 @@ namespace IRISProjectImporter
         }
 
 
-        public string[] InsertIndexFileInfos(IndexFileInfo[] indexFiles, string connectionString)
-        {
-            using (var connection = new NpgsqlConnection(connectionString))
-            {
-                string[] indexUUIDs = new string[indexFiles.Length];
-                connection.Open();
-                using (var transaction = connection.BeginTransaction())
-                {
-                    string sql = "INSERT INTO iris_project_info.index_data " +
-                        "(index_data_id, vnk, nnk, von_stat, bis_stat, richtung, cam, datum, version, bemerkung, volume, picpath, " +
-                        "v_seither_km, n_seither_km, abs, str_bez, laenge, kierunek, nrodc, km_lokp, km_lokk, km_globp, km_globk, phoml) " +
-                        "VALUES (gen_random_uuid(), @a, @b, @c, @d, @e, @f, @g, @h, @i, @j, @k, @l, @m, @n, @o, @p, @r, @s, @t, @u, @w, @x, @y) " +
-                        "RETURNING index_data_id;";
-                    for (int i = 0; i < indexFiles.Length; i++)
-                    {
-                        var command = new NpgsqlCommand(sql, connection);
-                        command.Parameters.AddWithValue("a", indexFiles[i].vnk);
-                        command.Parameters.AddWithValue("b", indexFiles[i].nnk);
-                        command.Parameters.AddWithValue("c", indexFiles[i].von_stat);
-                        command.Parameters.AddWithValue("d", indexFiles[i].bis_stat);
-                        command.Parameters.AddWithValue("e", indexFiles[i].richtung);
-                        command.Parameters.AddWithValue("f", indexFiles[i].cam);
-                        command.Parameters.AddWithValue("g", DateTime.Parse(indexFiles[i].datum));
-                        command.Parameters.AddWithValue("h", indexFiles[i].version);
-                        command.Parameters.AddWithValue("i", indexFiles[i].bemerkung);
-                        command.Parameters.AddWithValue("j", indexFiles[i].volume);
-                        command.Parameters.AddWithValue("k", indexFiles[i].picpath);
-                        command.Parameters.AddWithValue("l", indexFiles[i].v_seither_km);
-                        command.Parameters.AddWithValue("m", indexFiles[i].n_seither_km);
-                        command.Parameters.AddWithValue("n", indexFiles[i].abs);
-                        command.Parameters.AddWithValue("o", indexFiles[i].str_bez);
-                        command.Parameters.AddWithValue("p", indexFiles[i].laenge);
-                        command.Parameters.AddWithValue("r", indexFiles[i].kierunek);
-                        command.Parameters.AddWithValue("s", indexFiles[i].nrodc);
-                        command.Parameters.AddWithValue("t", indexFiles[i].km_lokp);
-                        command.Parameters.AddWithValue("u", indexFiles[i].km_lokk);
-                        command.Parameters.AddWithValue("w", indexFiles[i].km_globp);
-                        command.Parameters.AddWithValue("x", indexFiles[i].km_globk);
-                        command.Parameters.AddWithValue("y", indexFiles[i].phoml);
-
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                            {
-                                indexUUIDs[i] = reader.GetString(0);
-                            }
-                        }
-                    }
-                    transaction.Commit();
-                    return indexUUIDs;
-                }
-            }
-        }
-
-
-
-        
 
         public void InsertIndexWithPICs(string indexPath, string[] picPaths, string connectionString)
         {
@@ -106,6 +64,18 @@ namespace IRISProjectImporter
                 {
                     XmlFileReader xmlReader = new XmlFileReader();
 
+                    #region Logger Code
+                    if (_log)
+                    {
+                        _logger.Log("Connection established.");
+                        FileInfo indexFI = new FileInfo(indexPath);
+                        _logger.Log($"Inserting: {indexFI.Directory.Name}\\{indexFI.Name}");
+                    }
+                    int logIndexRecords = 0;
+                    int logPICRecords = 0;
+                    #endregion
+
+                    #region SQL querys
                     string sql_index = "INSERT INTO iris_project_info.index_data " +
                         "(index_data_id, vnk, nnk, von_stat, bis_stat, richtung, cam, datum, version, bemerkung, volume, picpath, " +
                         "v_seither_km, n_seither_km, abs, str_bez, laenge, kierunek, nrodc, km_lokp, km_lokk, km_globp, km_globk, phoml) " +
@@ -117,6 +87,7 @@ namespace IRISProjectImporter
                         "seiher_km, filename, format, datum, lat, latns, lon, lonns, alt, heading, picpath, " +
                         "acc_lat, acc_lon, acc_alt, acc_heading, acc_roll, acc_pitch, roll, pitch, unix_time, pic_id) " +
                         "VALUES (gen_random_uuid(), @v01, @v02, @v03, @v04, @v05, @v06, @v07, @v08, @v09, @v10, @v11, @v12, @v13, @v14, @v15, @v16, @v17, @v18, @v19, @v20, @v21, @v22, @v23, @v24, @v25, @v26, @v27, @v28, @v29); ";
+                    #endregion
 
                     // for every index find and insert current index and all PICs into database
                     foreach (IndexFileInfo index in xmlReader.ReadAllIndexFileInfo(indexPath))
@@ -158,6 +129,7 @@ namespace IRISProjectImporter
                         // find matching pic path with index path
                         for (int i = 0; i < picPaths.Length; i++)
                         {
+
                             DirectoryInfo currentDir = new DirectoryInfo(index.picpath);
                             DirectoryInfo picDir = new FileInfo(picPaths[i]).Directory;
                             string currentPath = currentDir.Parent.Name + "\\" + currentDir.Name;
@@ -166,6 +138,16 @@ namespace IRISProjectImporter
                             // if paths are the same it means that pic path was found to its according index path
                             if (currentPath.Equals(picDirPath))
                             {
+                                #region Logger and ProgressBarManager Code
+                                if (_log)
+                                {
+                                    FileInfo picFI = new FileInfo(picPaths[i]);
+                                    DirectoryInfo picDI= picFI.Directory;
+                                    _logger.Log($"Inserting: {picDI.Parent.Parent.Parent.Name}\\{picDI.Parent.Parent.Name}\\{picDI.Parent.Name}\\{picDI.Name}\\{picFI.Name}");
+                                    _progressBarManager.StepProgressBar();
+                                }
+                                #endregion
+
                                 foreach (PICFileInfo pic in xmlReader.ReadAllPicFileInfo(picPaths[i]))
                                 {
                                     var picCommand = new NpgsqlCommand(sql_pic, connection);
@@ -201,14 +183,19 @@ namespace IRISProjectImporter
                                     picCommand.Parameters.AddWithValue("v29", pic.pic_id);
                                     #endregion
                                     picCommand.ExecuteNonQuery();
+
+                                    logPICRecords++;
                                 }
                                 break;
                             }
                         }
+                        logIndexRecords++;
                     }
 
                     transaction.Commit();
-                    Console.WriteLine("# COMMIT #");
+                    #region Logger Code
+                    if (_log) _logger.Log($"Commited {logIndexRecords} Index records and {logPICRecords} PIC records");
+                    #endregion
                 }
             }
         }
