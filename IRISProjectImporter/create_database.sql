@@ -40,6 +40,12 @@ CREATE TABLE iris_project_info.index_data(
 	km_globp INTEGER,
 	km_globk INTEGER,
 	phoml CHARACTER VARYING(10),
+	route GEOMETRY,
+	begin_time TIMESTAMP WITHOUT TIME ZONE,
+	end_time TIMESTAMP WITHOUT TIME ZONE,
+	elapsed_time TIMESTAMP WITHOUT TIME ZONE,
+	avg_speed DOUBLE PRECISION,
+	pic_count INTEGER,
 	PRIMARY KEY(index_data_id)
 );
 
@@ -61,7 +67,7 @@ CREATE TABLE iris_project_info.pic_data(
 	lat DOUBLE PRECISION,
 	latns CHARACTER VARYING(2),
 	lon DOUBLE PRECISION,
-	lonns CHARACTER VARYING(2),
+	lonew CHARACTER VARYING(2),
 	alt DOUBLE PRECISION,
 	heading DOUBLE PRECISION,
 	picpath TEXT,
@@ -75,6 +81,10 @@ CREATE TABLE iris_project_info.pic_data(
 	pitch DOUBLE PRECISION,
 	unix_time DOUBLE PRECISION,
 	pic_id DOUBLE PRECISION,
+	speed_previous DOUBLE PRECISION,
+	time_previous DOUBLE PRECISION,
+	distance_previous DOUBLE PRECISION,
+	position GEOMETRY,
 	PRIMARY KEY(pic_data_id),
 	FOREIGN KEY(index_data_id) REFERENCES iris_project_info.index_data(index_data_id)
 		ON UPDATE CASCADE ON DELETE SET NULL

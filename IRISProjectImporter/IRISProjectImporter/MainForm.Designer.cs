@@ -50,6 +50,7 @@ namespace IRISProjectImporter
             this.startButton = new System.Windows.Forms.Button();
             this.progressBar = new System.Windows.Forms.ProgressBar();
             this.checkBox1 = new System.Windows.Forms.CheckBox();
+            this.raportFormButton = new System.Windows.Forms.Button();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -177,7 +178,7 @@ namespace IRISProjectImporter
             this.logTextBox.Location = new System.Drawing.Point(12, 248);
             this.logTextBox.Name = "logTextBox";
             this.logTextBox.ReadOnly = true;
-            this.logTextBox.Size = new System.Drawing.Size(460, 201);
+            this.logTextBox.Size = new System.Drawing.Size(460, 172);
             this.logTextBox.TabIndex = 14;
             this.logTextBox.Text = "";
             // 
@@ -202,7 +203,7 @@ namespace IRISProjectImporter
             // closeToolStripMenuItem
             // 
             this.closeToolStripMenuItem.Name = "closeToolStripMenuItem";
-            this.closeToolStripMenuItem.Size = new System.Drawing.Size(103, 22);
+            this.closeToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.closeToolStripMenuItem.Text = "Close";
             this.closeToolStripMenuItem.Click += new System.EventHandler(this.closeToolStripMenuItem_Click);
             // 
@@ -236,11 +237,22 @@ namespace IRISProjectImporter
             this.checkBox1.Text = "Remember";
             this.checkBox1.UseVisualStyleBackColor = true;
             // 
+            // raportFormButton
+            // 
+            this.raportFormButton.Location = new System.Drawing.Point(358, 426);
+            this.raportFormButton.Name = "raportFormButton";
+            this.raportFormButton.Size = new System.Drawing.Size(114, 23);
+            this.raportFormButton.TabIndex = 17;
+            this.raportFormButton.Text = "Raport";
+            this.raportFormButton.UseVisualStyleBackColor = true;
+            this.raportFormButton.Click += new System.EventHandler(this.raportFormButton_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(484, 461);
+            this.Controls.Add(this.raportFormButton);
             this.Controls.Add(this.checkBox1);
             this.Controls.Add(this.progressBar);
             this.Controls.Add(this.startButton);
@@ -265,6 +277,7 @@ namespace IRISProjectImporter
             this.MaximizeBox = false;
             this.Name = "MainForm";
             this.Text = "IRIS Project Importer";
+            this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();
             this.ResumeLayout(false);
@@ -295,6 +308,7 @@ namespace IRISProjectImporter
         private System.Windows.Forms.Button startButton;
         private System.Windows.Forms.ProgressBar progressBar;
         private System.Windows.Forms.CheckBox checkBox1;
+        private System.Windows.Forms.Button raportFormButton;
     }
 }
 

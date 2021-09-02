@@ -1,9 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
+using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Windows.Forms;
 using Npgsql;
 
 namespace IRISProjectImporter
@@ -67,7 +70,7 @@ namespace IRISProjectImporter
                     #region Logger Code
                     if (_log)
                     {
-                        _logger.Log("Connection established.");
+                        _logger.Log("Connection with database established.");
                         FileInfo indexFI = new FileInfo(indexPath);
                         _logger.Log($"Inserting: {indexFI.Directory.Name}\\{indexFI.Name}");
                     }
@@ -84,7 +87,7 @@ namespace IRISProjectImporter
 
                     string sql_pic = "INSERT INTO iris_project_info.pic_data " +
                         "(pic_data_id, index_data_id, id_drogi, vnk, nnk, abs, version, buchst, station, " +
-                        "seiher_km, filename, format, datum, lat, latns, lon, lonns, alt, heading, picpath, " +
+                        "seiher_km, filename, format, datum, lat, latns, lon, lonew, alt, heading, picpath, " +
                         "acc_lat, acc_lon, acc_alt, acc_heading, acc_roll, acc_pitch, roll, pitch, unix_time, pic_id) " +
                         "VALUES (gen_random_uuid(), @v01, @v02, @v03, @v04, @v05, @v06, @v07, @v08, @v09, @v10, @v11, @v12, @v13, @v14, @v15, @v16, @v17, @v18, @v19, @v20, @v21, @v22, @v23, @v24, @v25, @v26, @v27, @v28, @v29); ";
                     #endregion
@@ -120,8 +123,8 @@ namespace IRISProjectImporter
                         #endregion
 
                         string indexUUID = "";
-                        using (var reader = indexCommand.ExecuteReader()) // here it executes with returning UUID value
-                        {
+                        using (var reader = indexCommand.ExecuteReader())
+                        { // here it executes with returning UUID value
                             if (reader.Read())
                                 indexUUID = reader.GetString(0);
                         }
@@ -129,11 +132,10 @@ namespace IRISProjectImporter
                         // find matching pic path with index path
                         for (int i = 0; i < picPaths.Length; i++)
                         {
-
                             DirectoryInfo currentDir = new DirectoryInfo(index.picpath);
                             DirectoryInfo picDir = new FileInfo(picPaths[i]).Directory;
-                            string currentPath = currentDir.Parent.Name + "\\" + currentDir.Name;
-                            string picDirPath = picDir.Parent.Name + "\\" + picDir.Name;
+                            string currentPath = $"{currentDir.Parent.Name}\\{currentDir.Name}";
+                            string picDirPath = $"{picDir.Parent.Name}\\{picDir.Name}";
 
                             // if paths are the same it means that pic path was found to its according index path
                             if (currentPath.Equals(picDirPath))
@@ -142,7 +144,7 @@ namespace IRISProjectImporter
                                 if (_log)
                                 {
                                     FileInfo picFI = new FileInfo(picPaths[i]);
-                                    DirectoryInfo picDI= picFI.Directory;
+                                    DirectoryInfo picDI = picFI.Directory;
                                     _logger.Log($"Inserting: {picDI.Parent.Parent.Parent.Name}\\{picDI.Parent.Parent.Name}\\{picDI.Parent.Name}\\{picDI.Name}\\{picFI.Name}");
                                     _progressBarManager.StepProgressBar();
                                 }
@@ -167,7 +169,7 @@ namespace IRISProjectImporter
                                     picCommand.Parameters.AddWithValue("v13", pic.lat);
                                     picCommand.Parameters.AddWithValue("v14", pic.latns);
                                     picCommand.Parameters.AddWithValue("v15", pic.lon);
-                                    picCommand.Parameters.AddWithValue("v16", pic.lonns);
+                                    picCommand.Parameters.AddWithValue("v16", pic.lonew);
                                     picCommand.Parameters.AddWithValue("v17", pic.alt);
                                     picCommand.Parameters.AddWithValue("v18", pic.heading);
                                     picCommand.Parameters.AddWithValue("v19", pic.picpath);
@@ -197,6 +199,119 @@ namespace IRISProjectImporter
                     if (_log) _logger.Log($"Commited {logIndexRecords} Index records and {logPICRecords} PIC records");
                     #endregion
                 }
+            }
+        }
+
+        public void test(string indexPath, string connectionString)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    XmlFileReader xmlReader = new XmlFileReader();
+
+                    IndexFileInfo[] indexes = xmlReader.ReadAllIndexFileInfo(indexPath).ToArray();
+                    string[] indexUUIDs = new string[indexes.Length];
+
+                    for (int i = 0; i < indexes.Length; i++)
+                    {
+                        #region SQL - INSERT INTO iris_project_info.index_data...
+                        string sql_index = "INSERT INTO iris_project_info.index_data " +
+                            "(index_data_id) " +
+                            "VALUES (gen_random_uuid()) " +
+                            "RETURNING index_data_id;";
+                        #endregion
+                        using (var command = new NpgsqlCommand(sql_index, connection))
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                                indexUUIDs[i] = reader.GetString(0);
+                        }
+
+                        try // TODO: insert pozostałych danych
+                        {
+                            string picPath = $"{new FileInfo(indexPath).DirectoryName}\\{indexes[i].picpath}";
+                            picPath = new DirectoryInfo(picPath).GetFiles("PIC_*.xml")[0].FullName;
+                            foreach (PICFileInfo pic in xmlReader.ReadAllPicFileInfo(picPath))
+                            {
+                                #region SQL - INSERT INTO iris_project_info.pic_data...
+                                string sql_pic = "INSERT INTO iris_project_info.pic_data " +
+                                    "(pic_data_id, index_data_id, id_drogi, vnk, nnk, abs, version, buchst, station, " +
+                                    "seiher_km, filename, format, datum, lat, latns, lon, lonew, alt, heading, picpath, " +
+                                    "acc_lat, acc_lon, acc_alt, acc_heading, acc_roll, acc_pitch, roll, pitch, unix_time, pic_id) " +
+                                    "VALUES (gen_random_uuid(), @v01, @v02, @v03, @v04, @v05, @v06, @v07, @v08, @v09, @v10, @v11, @v12, " +
+                                    "@v13, @v14, @v15, @v16, @v17, @v18, @v19, @v20, @v21, @v22, @v23, @v24, @v25, @v26, @v27, @v28, @v29);";
+                                #endregion
+                                using (var picCommand = new NpgsqlCommand(sql_pic, connection))
+                                {
+                                    picCommand.Parameters.AddWithValue("v01", indexUUIDs[i]);
+                                    #region picCommand.Parameters
+                                    picCommand.Parameters.AddWithValue("v02", pic.id_drogi);
+                                    picCommand.Parameters.AddWithValue("v03", pic.vnk);
+                                    picCommand.Parameters.AddWithValue("v04", pic.nnk);
+                                    picCommand.Parameters.AddWithValue("v05", pic.abs);
+                                    picCommand.Parameters.AddWithValue("v06", pic.version);
+                                    picCommand.Parameters.AddWithValue("v07", pic.buchst);
+                                    picCommand.Parameters.AddWithValue("v08", pic.station);
+                                    picCommand.Parameters.AddWithValue("v09", pic.seiher_km);
+                                    picCommand.Parameters.AddWithValue("v10", pic.filename);
+                                    picCommand.Parameters.AddWithValue("v11", pic.format);
+                                    picCommand.Parameters.AddWithValue("v12", DateTime.Parse(pic.datum));
+                                    picCommand.Parameters.AddWithValue("v13", pic.lat);
+                                    picCommand.Parameters.AddWithValue("v14", pic.latns);
+                                    picCommand.Parameters.AddWithValue("v15", pic.lon);
+                                    picCommand.Parameters.AddWithValue("v16", pic.lonew);
+                                    picCommand.Parameters.AddWithValue("v17", pic.alt);
+                                    picCommand.Parameters.AddWithValue("v18", pic.heading);
+                                    picCommand.Parameters.AddWithValue("v19", pic.picpath);
+                                    picCommand.Parameters.AddWithValue("v20", pic.acc_lat);
+                                    picCommand.Parameters.AddWithValue("v21", pic.acc_lon);
+                                    picCommand.Parameters.AddWithValue("v22", pic.acc_alt);
+                                    picCommand.Parameters.AddWithValue("v23", pic.acc_heading);
+                                    picCommand.Parameters.AddWithValue("v24", pic.acc_roll);
+                                    picCommand.Parameters.AddWithValue("v25", pic.acc_pitch);
+                                    picCommand.Parameters.AddWithValue("v26", pic.roll);
+                                    picCommand.Parameters.AddWithValue("v27", pic.pitch);
+                                    picCommand.Parameters.AddWithValue("v28", pic.unix_time);
+                                    picCommand.Parameters.AddWithValue("v29", pic.pic_id);
+                                    #endregion
+                                    picCommand.ExecuteNonQuery();
+                                }
+                            }
+                        }
+                        catch (Exception)
+                        {
+
+                            throw;
+                        }
+                        
+                    }
+                    
+                    transaction.Commit();
+                }
+            }
+        }
+
+
+
+        public Task LoadDataGridViewAsync(DataGridView dataGridView, string connectionString)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            //using (var adapter = new NpgsqlDataAdapter("SELECT * FROM iris_project_info.index_data", connection))
+            using (var adapter = new NpgsqlDataAdapter("SELECT * FROM iris_project_info.pic_data LIMIT 100000", connection))
+            {
+                connection.Open();
+                DataTable dataTable = new DataTable("IndexTable");
+                adapter.Fill(dataTable);
+
+                Stopwatch s = Stopwatch.StartNew();
+
+                dataGridView.DataSource = dataTable;
+
+                s.Stop();
+                Console.WriteLine(s.ElapsedMilliseconds);
+                return Task.CompletedTask;
             }
         }
 

@@ -31,3 +31,4 @@ C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImpo
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\System.Threading.Tasks.Extensions.xml
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\System.ValueTuple.xml
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.CopyComplete
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.RaportForm.resources

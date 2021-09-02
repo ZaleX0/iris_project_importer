@@ -80,7 +80,7 @@ namespace IRISProjectImporter
                 pic.lat         = r.ReadElementContentAsDouble();  r.Read();
                 pic.latns       = r.ReadElementContentAsString();  r.Read();
                 pic.lon         = r.ReadElementContentAsDouble();  r.Read();
-                pic.lonns       = r.ReadElementContentAsString();  r.Read();
+                pic.lonew       = r.ReadElementContentAsString();  r.Read();
                 pic.alt         = r.ReadElementContentAsDouble();  r.Read();
                 pic.heading     = r.ReadElementContentAsDouble();  r.Read();
                 pic.picpath     = r.ReadElementContentAsString();  r.Read();
@@ -155,7 +155,7 @@ namespace IRISProjectImporter
                 pic.lat = r.ReadElementContentAsDouble(); r.Read();
                 pic.latns = r.ReadElementContentAsString(); r.Read();
                 pic.lon = r.ReadElementContentAsDouble(); r.Read();
-                pic.lonns = r.ReadElementContentAsString(); r.Read();
+                pic.lonew = r.ReadElementContentAsString(); r.Read();
                 pic.alt = r.ReadElementContentAsDouble(); r.Read();
                 pic.heading = r.ReadElementContentAsDouble(); r.Read();
                 pic.picpath = r.ReadElementContentAsString(); r.Read();

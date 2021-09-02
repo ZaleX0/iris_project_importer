@@ -34,7 +34,7 @@ namespace IRISProjectImporter
         public double lat { get; set; }
         public string latns { get; set; }
         public double lon { get; set; }
-        public string lonns { get; set; }
+        public string lonew { get; set; }
         public double alt { get; set; }
         public double heading { get; set; }
         public string picpath { get; set; }

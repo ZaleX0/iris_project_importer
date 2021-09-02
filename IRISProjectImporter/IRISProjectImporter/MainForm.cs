@@ -11,7 +11,7 @@ using System.Windows.Forms;
 
 namespace IRISProjectImporter
 {
-    public partial class MainForm : Form
+    partial class MainForm : Form
     {
 
         Logger _logger;
@@ -40,23 +40,21 @@ namespace IRISProjectImporter
 
             reloadDbButton.Enabled = false;
             dbNameComboBox.Items.Clear();
-            await Task.Run(() =>
-            {
-                #region SQLManager and connectionString
-                SQLManager sqlManager = new SQLManager();
-                string connectionString = sqlManager.GetConnectionString(
-                    hostTextBox.Text,
-                    portTextBox.Text,
-                    loginTextBox.Text,
-                    passwordTextBox.Text,
-                    "postgres");
-                #endregion
-
+            await Task.Run(() => {
                 try
                 {
+                    #region SQLManager and connectionString
+                    SQLManager sqlManager = new SQLManager();
+                    string connectionString = sqlManager.GetConnectionString(
+                        hostTextBox.Text,
+                        portTextBox.Text,
+                        loginTextBox.Text,
+                        passwordTextBox.Text,
+                        "postgres");
+                    #endregion
+
                     string[] dbNames = sqlManager.GetDatabaseNames(connectionString);
-                    BeginInvoke(new Action(() =>
-                    {
+                    BeginInvoke(new Action(() => {
                         dbNameComboBox.Items.AddRange(dbNames);
                         dbNameComboBox.SelectedIndex = 0;
                         _logger.Log("Databases realoaded.");
@@ -64,6 +62,7 @@ namespace IRISProjectImporter
                 }
                 catch (Exception ex)
                 {
+                    //_logger.Log(ex.StackTrace);
                     _logger.Log(ex.Message);
                     MessageBox.Show(ex.Message);
                 }
@@ -89,11 +88,11 @@ namespace IRISProjectImporter
 
         private async void startButton_Click(object sender, EventArgs e)
         {
-            // Disabling button to prevent spamming
+            // Disabling buttons to prevent spamming
             startButton.Enabled = false;
             reloadDbButton.Enabled = false;
-            await Task.Run(() =>
-            {
+
+            await Task.Run(() => {
                 try
                 {
                     #region SQLManager, dbName and connectionString
@@ -122,10 +121,14 @@ namespace IRISProjectImporter
                         _pbm.SetProgressBar(0, (indexFilePaths.Length + picFilePaths.Length) * 10, 10);
                         #endregion
 
+                        Console.WriteLine(picFilePaths[0]);
+                        Console.WriteLine(indexFilePaths[0]);
+
                         for (int i = 0; i < indexFilePaths.Length; i++)
                         {
                             string[] picsPerIndexPath = picFileManager.GetPICFilePaths(indexFilePaths[i]);
-                            sqlManager.InsertIndexWithPICs(indexFilePaths[i], picsPerIndexPath, connectionString);
+                            //sqlManager.InsertIndexWithPICs(indexFilePaths[i], picsPerIndexPath, connectionString);
+                            sqlManager.test(indexFilePaths[i], connectionString);
                             _pbm.StepProgressBar();
                         }
                     }
@@ -133,31 +136,47 @@ namespace IRISProjectImporter
                     {
                         _logger.Log("No Database selected.");
                     }
-
-
-
                 }
                 catch (Exception ex)
                 {
-                    _logger.Log(ex.StackTrace);
+                    //_logger.Log(ex.StackTrace);
                     _logger.Log(ex.Message);
                     MessageBox.Show(ex.Message);
                 }
                 finally
                 {
-                    // Enabling button
-                    BeginInvoke(new Action(() =>
-                    {
+                    // Enabling buttons
+                    BeginInvoke(new Action(() => {
                         startButton.Enabled = true;
                         reloadDbButton.Enabled = true;
                     }));
                 }
             });
         }
+
         private void closeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Close();
         }
 
+        private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
+        {
+            // TODO: log info if inserting got cancelled
+            _logger.SaveLogToDir("IRISProjectImporter_Logs");
+        }
+
+        #region
+        private void raportFormButton_Click(object sender, EventArgs e)
+        {
+            string dbName = dbNameComboBox.Text;
+            string connectionString = new SQLManager().GetConnectionString(
+                hostTextBox.Text,
+                portTextBox.Text,
+                loginTextBox.Text,
+                passwordTextBox.Text,
+                dbName);
+            new RaportForm(connectionString, _logger).Show();
+        }
+        #endregion
     }
 }

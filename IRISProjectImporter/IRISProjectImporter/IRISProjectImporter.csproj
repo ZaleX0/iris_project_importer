@@ -93,6 +93,12 @@
     <Compile Include="Program.cs" />
     <Compile Include="ProgressBarManager.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RaportForm.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="RaportForm.Designer.cs">
+      <DependentUpon>RaportForm.cs</DependentUpon>
+    </Compile>
     <Compile Include="SQLManager.cs" />
     <Compile Include="PICFileManager.cs" />
     <Compile Include="XmlFileReader.cs" />
@@ -108,6 +114,9 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <EmbeddedResource Include="RaportForm.resx">
+      <DependentUpon>RaportForm.cs</DependentUpon>
+    </EmbeddedResource>
     <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>

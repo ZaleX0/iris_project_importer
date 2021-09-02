@@ -5,12 +5,13 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
-using System.Reflection;
+using System.IO;
 
 namespace IRISProjectImporter
 {
     class Logger
     {
+
         RichTextBox richTextBox;
 
         public Logger(RichTextBox richTextBox)
@@ -20,8 +21,8 @@ namespace IRISProjectImporter
 
         public void Log(string message)
         {
-            //string log = $"{DateTime.Now:[HH:mm:ss]} {message}\n";
-            string log = $"[{DateTime.Now}] {message}\n";
+            //string log = $"[{DateTime.Now}] {message}\n";
+            string log = $"{DateTime.Now:[HH:mm:ss]} {message}\n";
 
             if (richTextBox.InvokeRequired)
                 richTextBox.BeginInvoke(new Action(() => richTextBox.AppendText(log)));
@@ -29,10 +30,16 @@ namespace IRISProjectImporter
                 richTextBox.AppendText(log);
         }
 
-        public void SaveToFile(string path)
+        public void SaveLogToDir(string dirPath)
         {
-            // TODO: save log to file
+            if (richTextBox.TextLength > 0)
+            {
+                if (!Directory.Exists(dirPath))
+                    Directory.CreateDirectory(dirPath);
 
+                string filename = $"{DateTime.Now:dd-MM-yyyy_HH-mm}.txt";
+                richTextBox.SaveFile($"{dirPath}\\{filename}", RichTextBoxStreamType.PlainText);
+            }
         }
     }
 }
