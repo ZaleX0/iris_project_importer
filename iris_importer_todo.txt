@@ -1,0 +1,73 @@
+
+HINT :)
+/*
+	Tworzenie geometrii postgis
+	===========================
+	
+	Geometrię PostGIS możemy utworzyć np. za pomocą funkcji st_geomfromtext(..) przyjmującej w parametrach tekstową postać geometrii np.
+	
+	-- POINT(Longitude Latitude)
+	update pic_data set position = st_geomfromtext('POINT(14.2170499 47.7064608)');
+		
+	Dobrze jest również dodać informację w jakim EPSG (EPSG Geodetic Parameter Set) zapisana jest geometria 
+	
+	-- ST_SETSRID(4326) -- SRID = 4326 to EPSG:4326 czyli układ kątowy WGS84 (GPS :P)
+	update pic_data set position = st_setsrid( st_geomfromtext('POINT(14.2170499 47.7064608)') , 4326);
+*/
+
+HINT2 :)
+/*
+	Wyliczanie wartości PostGIS
+	===========================
+	
+	Do wyliczenia wartości np. dystansu pomiędzy dwoma punktami GPS (jeśli mamy już w bazie danych geometrię punktów), możemy
+	użyć gotowej funkcji st_distance(point1, point2) z PostGIS. Problem jest taki, że EPSG:4326 jest to miara kątowa,
+	więc najpierw trzeba przeliczyć punkty na układ kartezjański płaski np. układ 92 (dla polski) lub układ UTM (tu trzeba znać strefę itd.).
+	Cała funkcja na dystans będzie wyglądała np. jak poniższa
+	
+	update pic_data set distance_previous = 
+		st_distance(
+			st_transform( 
+				st_setsrid( st_geomfromtext('POINT(14.2170499 47.7064608)') , 4326)
+				, 2180
+			),
+			st_transform( 
+				st_setsrid( st_geomfromtext('POINT(11.2170499 47.7064608)') , 4326)
+				, 2180
+			)
+		);
+		
+	:)
+*/
+
+- Do tabeli index_data trzeba dodać dodatkowe kolumny z informacją:
+	
+	route geometry								-- kolumna będzie zawierała geometrię typu LINESTRING przejechanego kawałka
+	begin_time timestamp without time zone 		-- czas rozpoczącia pomiaru z pierwszego zdjęcia
+	end_time timestamp without time zone		-- czas zakończenia pomiaru z ostatniego zdjęcia
+	elapsed_time timestamp without time zone 	-- w jakim czasie przejechano odcinek
+	avg_speed double precision					-- średnia prędkość pojazdu na odcinku
+	pic_count integer							-- ilość zdjęć na danym odcinku
+	
+- Do tabeli pic_data trzeba dodać dodatkowe kolumny z informacją:
+
+	speed_previous double precision				-- prędkość pomiędzy aktualnym a poprzednim zdjęciem (jeśli nie ma poprzedniego zdjęcia to NULL)
+	time_previous double precision				-- czas przejechania pomiędzy aktualnym a poprzednim zdjęciem (jeśli nie ma poprzedniego zdjęcia to NULL)
+	distance_previous double precision			-- dystans pomiędzy aktualnym a poprzednim zdjęciem (jeśli nie ma poprzedniego zdjęcia to NULL)
+	position geometry							-- kolumna będzie zawierała geometrię typu POINT (miejsce na mapie w którym zrobiono zdjęcie)
+	
+- Do bazy trzeba dodać wyzwalacze (TRIGGER):
+
+	- po wykonaniu INSERTA na tabeli pic_data powinien uruchomić się wyzwalacz (BEFORE INSERT lub AFTER INSERT), który
+		wyliczy wartości w kolumnach tabeli pic_data oraz zaktualizuje tabelę index_data odpowiednimi wartościami
+		
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		

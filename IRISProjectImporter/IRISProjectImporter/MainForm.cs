@@ -121,15 +121,10 @@ namespace IRISProjectImporter
                         _pbm.SetProgressBar(0, (indexFilePaths.Length + picFilePaths.Length) * 10, 10);
                         #endregion
 
-                        Console.WriteLine(picFilePaths[0]);
-                        Console.WriteLine(indexFilePaths[0]);
-
                         for (int i = 0; i < indexFilePaths.Length; i++)
                         {
-                            string[] picsPerIndexPath = picFileManager.GetPICFilePaths(indexFilePaths[i]);
-                            //sqlManager.InsertIndexWithPICs(indexFilePaths[i], picsPerIndexPath, connectionString);
-                            sqlManager.test(indexFilePaths[i], connectionString);
                             _pbm.StepProgressBar();
+                            sqlManager.InsertIndexWithPics(indexFilePaths[i], connectionString);
                         }
                     }
                     else
@@ -165,18 +160,5 @@ namespace IRISProjectImporter
             _logger.SaveLogToDir("IRISProjectImporter_Logs");
         }
 
-        #region
-        private void raportFormButton_Click(object sender, EventArgs e)
-        {
-            string dbName = dbNameComboBox.Text;
-            string connectionString = new SQLManager().GetConnectionString(
-                hostTextBox.Text,
-                portTextBox.Text,
-                loginTextBox.Text,
-                passwordTextBox.Text,
-                dbName);
-            new RaportForm(connectionString, _logger).Show();
-        }
-        #endregion
     }
 }

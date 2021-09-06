@@ -55,10 +55,226 @@ namespace IRISProjectImporter
                 return dbList.ToArray();
             }
         }
+        public void InsertIndexWithPics(string indexPath, string connectionString)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var transaction = connection.BeginTransaction())
+                {
+                    #region Logger Code
+                    if (_log) _logger.Log("Connection established.");
+                    int index_i = 0;
+                    int pic_i = 0;
+                    #endregion
+
+                    XmlFileReader xmlReader = new XmlFileReader();
+                    IndexFileInfo[] indexes = xmlReader.IndexFileInfoArray(indexPath);
+                    string[] indexUUIDs = new string[indexes.Length];
+                    for (int i = 0; i < indexes.Length; i++)
+                    {
+                        #region SQL - INSERT INTO iris_project_info.index_data...
+                        string sql_index = "INSERT INTO iris_project_info.index_data " +
+                            "(index_data_id) " +
+                            "VALUES (gen_random_uuid()) " +
+                            "RETURNING index_data_id;";
+                        #endregion
+                        using (var command = new NpgsqlCommand(sql_index, connection))
+                        using (var reader = command.ExecuteReader())
+                        {
+                            if (reader.Read())
+                                indexUUIDs[i] = reader.GetString(0);
+                        }
+
+                        try
+                        {
+                            #region SQL - INSERT INTO iris_project_info.pic_data...
+                            string sql_pic = "INSERT INTO iris_project_info.pic_data " +
+                                "(pic_data_id, index_data_id, id_drogi, vnk, nnk, abs, version, buchst, station, " +
+                                "seiher_km, filename, format, datum, lat, latns, lon, lonew, alt, heading, picpath, " +
+                                "acc_lat, acc_lon, acc_alt, acc_heading, acc_roll, acc_pitch, roll, pitch, unix_time, pic_id) " +
+                                "VALUES (gen_random_uuid(), @v01, @v02, @v03, @v04, @v05, @v06, @v07, @v08, @v09, @v10, @v11, @v12, " +
+                                "@v13, @v14, @v15, @v16, @v17, @v18, @v19, @v20, @v21, @v22, @v23, @v24, @v25, @v26, @v27, @v28, @v29);";
+                            #endregion
+
+                            string picPath = $"{new FileInfo(indexPath).DirectoryName}\\{indexes[i].picpath}";
+                            picPath = new DirectoryInfo(picPath).GetFiles("PIC_*.xml")[0].FullName;
+                            PICFileInfo[] pics = xmlReader.PicFileInfoArray(picPath);
+
+                            Console.WriteLine(indexes[i].picpath);
+
+                            #region Logger Code
+                            if (_log)
+                            {
+                                _logger.Log($"Inserting: {indexes[i].picpath}");
+                                _progressBarManager.StepProgressBar();
+                            }
+                            #endregion
+
+                            // jesli kierunek jest przeciwny to czytaj xmla od konca
+                            string kierunek = new DirectoryInfo(indexes[i].picpath).Parent.Name.Split('_')[2];
+                            if (kierunek.Equals("M"))
+                            {
+                                for (int j = pics.Length - 1; j >= 0; j--)
+                                {
+                                    using (var picCommand = new NpgsqlCommand(sql_pic, connection))
+                                    {
+                                        picCommand.Parameters.AddWithValue("v01", indexUUIDs[i]);
+                                        #region picCommand.Parameters
+                                        picCommand.Parameters.AddWithValue("v02", pics[j].id_drogi);
+                                        picCommand.Parameters.AddWithValue("v03", pics[j].vnk);
+                                        picCommand.Parameters.AddWithValue("v04", pics[j].nnk);
+                                        picCommand.Parameters.AddWithValue("v05", pics[j].abs);
+                                        picCommand.Parameters.AddWithValue("v06", pics[j].version);
+                                        picCommand.Parameters.AddWithValue("v07", pics[j].buchst);
+                                        picCommand.Parameters.AddWithValue("v08", pics[j].station);
+                                        picCommand.Parameters.AddWithValue("v09", pics[j].seiher_km);
+                                        picCommand.Parameters.AddWithValue("v10", pics[j].filename);
+                                        picCommand.Parameters.AddWithValue("v11", pics[j].format);
+                                        picCommand.Parameters.AddWithValue("v12", DateTime.Parse(pics[j].datum));
+                                        picCommand.Parameters.AddWithValue("v13", pics[j].lat);
+                                        picCommand.Parameters.AddWithValue("v14", pics[j].latns);
+                                        picCommand.Parameters.AddWithValue("v15", pics[j].lon);
+                                        picCommand.Parameters.AddWithValue("v16", pics[j].lonew);
+                                        picCommand.Parameters.AddWithValue("v17", pics[j].alt);
+                                        picCommand.Parameters.AddWithValue("v18", pics[j].heading);
+                                        picCommand.Parameters.AddWithValue("v19", pics[j].picpath);
+                                        picCommand.Parameters.AddWithValue("v20", pics[j].acc_lat);
+                                        picCommand.Parameters.AddWithValue("v21", pics[j].acc_lon);
+                                        picCommand.Parameters.AddWithValue("v22", pics[j].acc_alt);
+                                        picCommand.Parameters.AddWithValue("v23", pics[j].acc_heading);
+                                        picCommand.Parameters.AddWithValue("v24", pics[j].acc_roll);
+                                        picCommand.Parameters.AddWithValue("v25", pics[j].acc_pitch);
+                                        picCommand.Parameters.AddWithValue("v26", pics[j].roll);
+                                        picCommand.Parameters.AddWithValue("v27", pics[j].pitch);
+                                        picCommand.Parameters.AddWithValue("v28", pics[j].unix_time);
+                                        picCommand.Parameters.AddWithValue("v29", pics[j].pic_id);
+                                        #endregion
+                                        picCommand.ExecuteNonQuery();
+                                    }
+                                    pic_i++;
+                                }
+                            }
+                            else
+                            {
+                                for (int j = 0; j < pics.Length; j++)
+                                {
+                                    using (var picCommand = new NpgsqlCommand(sql_pic, connection))
+                                    {
+                                        picCommand.Parameters.AddWithValue("v01", indexUUIDs[i]);
+                                        #region picCommand.Parameters
+                                        picCommand.Parameters.AddWithValue("v02", pics[j].id_drogi);
+                                        picCommand.Parameters.AddWithValue("v03", pics[j].vnk);
+                                        picCommand.Parameters.AddWithValue("v04", pics[j].nnk);
+                                        picCommand.Parameters.AddWithValue("v05", pics[j].abs);
+                                        picCommand.Parameters.AddWithValue("v06", pics[j].version);
+                                        picCommand.Parameters.AddWithValue("v07", pics[j].buchst);
+                                        picCommand.Parameters.AddWithValue("v08", pics[j].station);
+                                        picCommand.Parameters.AddWithValue("v09", pics[j].seiher_km);
+                                        picCommand.Parameters.AddWithValue("v10", pics[j].filename);
+                                        picCommand.Parameters.AddWithValue("v11", pics[j].format);
+                                        picCommand.Parameters.AddWithValue("v12", DateTime.Parse(pics[j].datum));
+                                        picCommand.Parameters.AddWithValue("v13", pics[j].lat);
+                                        picCommand.Parameters.AddWithValue("v14", pics[j].latns);
+                                        picCommand.Parameters.AddWithValue("v15", pics[j].lon);
+                                        picCommand.Parameters.AddWithValue("v16", pics[j].lonew);
+                                        picCommand.Parameters.AddWithValue("v17", pics[j].alt);
+                                        picCommand.Parameters.AddWithValue("v18", pics[j].heading);
+                                        picCommand.Parameters.AddWithValue("v19", pics[j].picpath);
+                                        picCommand.Parameters.AddWithValue("v20", pics[j].acc_lat);
+                                        picCommand.Parameters.AddWithValue("v21", pics[j].acc_lon);
+                                        picCommand.Parameters.AddWithValue("v22", pics[j].acc_alt);
+                                        picCommand.Parameters.AddWithValue("v23", pics[j].acc_heading);
+                                        picCommand.Parameters.AddWithValue("v24", pics[j].acc_roll);
+                                        picCommand.Parameters.AddWithValue("v25", pics[j].acc_pitch);
+                                        picCommand.Parameters.AddWithValue("v26", pics[j].roll);
+                                        picCommand.Parameters.AddWithValue("v27", pics[j].pitch);
+                                        picCommand.Parameters.AddWithValue("v28", pics[j].unix_time);
+                                        picCommand.Parameters.AddWithValue("v29", pics[j].pic_id);
+                                        #endregion
+                                        picCommand.ExecuteNonQuery();
+                                    }
+                                    pic_i++;
+                                }
+                            }
+                        }
+                        catch (IndexOutOfRangeException)
+                        {
+                            throw;
+                        }
+
+                        #region SQL - UPDATE index
+                        string sql_update_index = "UPDATE iris_project_info.index_data " +
+                            "SET vnk = @p01," +
+                            "nnk = @p02," +
+                            "von_stat = @p03," +
+                            "bis_stat = @p04," +
+                            "richtung = @p05," +
+                            "cam = @p06," +
+                            "datum = @p07," +
+                            "version = @p08," +
+                            "bemerkung = @p09," +
+                            "volume = @p10," +
+                            "picpath = @p11," +
+                            "v_seither_km = @p12," +
+                            "n_seither_km = @p13," +
+                            "abs = @p14," +
+                            "str_bez = @p15," +
+                            "laenge = @p16," +
+                            "kierunek = @p17," +
+                            "nrodc = @p18," +
+                            "km_lokp = @p19," +
+                            "km_lokk = @p20," +
+                            "km_globp = @p21," +
+                            "km_globk = @p22," +
+                            "phoml = @p23 " +
+                            $"WHERE index_data_id = '{indexUUIDs[i]}'; ";
+                        #endregion
+                        using (var indexCommand = new NpgsqlCommand(sql_update_index, connection))
+                        {
+                            #region indexCommand.Parameters
+                            indexCommand.Parameters.AddWithValue("p01", indexes[i].vnk);
+                            indexCommand.Parameters.AddWithValue("p02", indexes[i].nnk);
+                            indexCommand.Parameters.AddWithValue("p03", indexes[i].von_stat);
+                            indexCommand.Parameters.AddWithValue("p04", indexes[i].bis_stat);
+                            indexCommand.Parameters.AddWithValue("p05", indexes[i].richtung);
+                            indexCommand.Parameters.AddWithValue("p06", indexes[i].cam);
+                            indexCommand.Parameters.AddWithValue("p07", DateTime.Parse(indexes[i].datum));
+                            indexCommand.Parameters.AddWithValue("p08", indexes[i].version);
+                            indexCommand.Parameters.AddWithValue("p09", indexes[i].bemerkung);
+                            indexCommand.Parameters.AddWithValue("p10", indexes[i].volume);
+                            indexCommand.Parameters.AddWithValue("p11", indexes[i].picpath);
+                            indexCommand.Parameters.AddWithValue("p12", indexes[i].v_seither_km);
+                            indexCommand.Parameters.AddWithValue("p13", indexes[i].n_seither_km);
+                            indexCommand.Parameters.AddWithValue("p14", indexes[i].abs);
+                            indexCommand.Parameters.AddWithValue("p15", indexes[i].str_bez);
+                            indexCommand.Parameters.AddWithValue("p16", indexes[i].laenge);
+                            indexCommand.Parameters.AddWithValue("p17", indexes[i].kierunek);
+                            indexCommand.Parameters.AddWithValue("p18", indexes[i].nrodc);
+                            indexCommand.Parameters.AddWithValue("p19", indexes[i].km_lokp);
+                            indexCommand.Parameters.AddWithValue("p20", indexes[i].km_lokk);
+                            indexCommand.Parameters.AddWithValue("p21", indexes[i].km_globp);
+                            indexCommand.Parameters.AddWithValue("p22", indexes[i].km_globk);
+                            indexCommand.Parameters.AddWithValue("p23", indexes[i].phoml);
+                            #endregion
+                            indexCommand.ExecuteNonQuery();
+                        }
+
+                        index_i++;
+                    }
+
+                    #region Logger Code
+                    if (_log) _logger.Log($"Commited {index_i} Index records and {pic_i} PIC records.");
+                    #endregion
+                    transaction.Commit();
+                }
+            }
+        }
 
 
 
-        public void InsertIndexWithPICs(string indexPath, string[] picPaths, string connectionString)
+       
+        private void InsertIndexWithPICs_OLD(string indexPath, string[] picPaths, string connectionString)
         {
             using (var connection = new NpgsqlConnection(connectionString))
             {
@@ -199,119 +415,6 @@ namespace IRISProjectImporter
                     if (_log) _logger.Log($"Commited {logIndexRecords} Index records and {logPICRecords} PIC records");
                     #endregion
                 }
-            }
-        }
-
-        public void test(string indexPath, string connectionString)
-        {
-            using (var connection = new NpgsqlConnection(connectionString))
-            {
-                connection.Open();
-                using (var transaction = connection.BeginTransaction())
-                {
-                    XmlFileReader xmlReader = new XmlFileReader();
-
-                    IndexFileInfo[] indexes = xmlReader.ReadAllIndexFileInfo(indexPath).ToArray();
-                    string[] indexUUIDs = new string[indexes.Length];
-
-                    for (int i = 0; i < indexes.Length; i++)
-                    {
-                        #region SQL - INSERT INTO iris_project_info.index_data...
-                        string sql_index = "INSERT INTO iris_project_info.index_data " +
-                            "(index_data_id) " +
-                            "VALUES (gen_random_uuid()) " +
-                            "RETURNING index_data_id;";
-                        #endregion
-                        using (var command = new NpgsqlCommand(sql_index, connection))
-                        using (var reader = command.ExecuteReader())
-                        {
-                            if (reader.Read())
-                                indexUUIDs[i] = reader.GetString(0);
-                        }
-
-                        try // TODO: insert pozostałych danych
-                        {
-                            string picPath = $"{new FileInfo(indexPath).DirectoryName}\\{indexes[i].picpath}";
-                            picPath = new DirectoryInfo(picPath).GetFiles("PIC_*.xml")[0].FullName;
-                            foreach (PICFileInfo pic in xmlReader.ReadAllPicFileInfo(picPath))
-                            {
-                                #region SQL - INSERT INTO iris_project_info.pic_data...
-                                string sql_pic = "INSERT INTO iris_project_info.pic_data " +
-                                    "(pic_data_id, index_data_id, id_drogi, vnk, nnk, abs, version, buchst, station, " +
-                                    "seiher_km, filename, format, datum, lat, latns, lon, lonew, alt, heading, picpath, " +
-                                    "acc_lat, acc_lon, acc_alt, acc_heading, acc_roll, acc_pitch, roll, pitch, unix_time, pic_id) " +
-                                    "VALUES (gen_random_uuid(), @v01, @v02, @v03, @v04, @v05, @v06, @v07, @v08, @v09, @v10, @v11, @v12, " +
-                                    "@v13, @v14, @v15, @v16, @v17, @v18, @v19, @v20, @v21, @v22, @v23, @v24, @v25, @v26, @v27, @v28, @v29);";
-                                #endregion
-                                using (var picCommand = new NpgsqlCommand(sql_pic, connection))
-                                {
-                                    picCommand.Parameters.AddWithValue("v01", indexUUIDs[i]);
-                                    #region picCommand.Parameters
-                                    picCommand.Parameters.AddWithValue("v02", pic.id_drogi);
-                                    picCommand.Parameters.AddWithValue("v03", pic.vnk);
-                                    picCommand.Parameters.AddWithValue("v04", pic.nnk);
-                                    picCommand.Parameters.AddWithValue("v05", pic.abs);
-                                    picCommand.Parameters.AddWithValue("v06", pic.version);
-                                    picCommand.Parameters.AddWithValue("v07", pic.buchst);
-                                    picCommand.Parameters.AddWithValue("v08", pic.station);
-                                    picCommand.Parameters.AddWithValue("v09", pic.seiher_km);
-                                    picCommand.Parameters.AddWithValue("v10", pic.filename);
-                                    picCommand.Parameters.AddWithValue("v11", pic.format);
-                                    picCommand.Parameters.AddWithValue("v12", DateTime.Parse(pic.datum));
-                                    picCommand.Parameters.AddWithValue("v13", pic.lat);
-                                    picCommand.Parameters.AddWithValue("v14", pic.latns);
-                                    picCommand.Parameters.AddWithValue("v15", pic.lon);
-                                    picCommand.Parameters.AddWithValue("v16", pic.lonew);
-                                    picCommand.Parameters.AddWithValue("v17", pic.alt);
-                                    picCommand.Parameters.AddWithValue("v18", pic.heading);
-                                    picCommand.Parameters.AddWithValue("v19", pic.picpath);
-                                    picCommand.Parameters.AddWithValue("v20", pic.acc_lat);
-                                    picCommand.Parameters.AddWithValue("v21", pic.acc_lon);
-                                    picCommand.Parameters.AddWithValue("v22", pic.acc_alt);
-                                    picCommand.Parameters.AddWithValue("v23", pic.acc_heading);
-                                    picCommand.Parameters.AddWithValue("v24", pic.acc_roll);
-                                    picCommand.Parameters.AddWithValue("v25", pic.acc_pitch);
-                                    picCommand.Parameters.AddWithValue("v26", pic.roll);
-                                    picCommand.Parameters.AddWithValue("v27", pic.pitch);
-                                    picCommand.Parameters.AddWithValue("v28", pic.unix_time);
-                                    picCommand.Parameters.AddWithValue("v29", pic.pic_id);
-                                    #endregion
-                                    picCommand.ExecuteNonQuery();
-                                }
-                            }
-                        }
-                        catch (Exception)
-                        {
-
-                            throw;
-                        }
-                        
-                    }
-                    
-                    transaction.Commit();
-                }
-            }
-        }
-
-
-
-        public Task LoadDataGridViewAsync(DataGridView dataGridView, string connectionString)
-        {
-            using (var connection = new NpgsqlConnection(connectionString))
-            //using (var adapter = new NpgsqlDataAdapter("SELECT * FROM iris_project_info.index_data", connection))
-            using (var adapter = new NpgsqlDataAdapter("SELECT * FROM iris_project_info.pic_data LIMIT 100000", connection))
-            {
-                connection.Open();
-                DataTable dataTable = new DataTable("IndexTable");
-                adapter.Fill(dataTable);
-
-                Stopwatch s = Stopwatch.StartNew();
-
-                dataGridView.DataSource = dataTable;
-
-                s.Stop();
-                Console.WriteLine(s.ElapsedMilliseconds);
-                return Task.CompletedTask;
             }
         }
 
