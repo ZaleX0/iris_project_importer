@@ -14,6 +14,7 @@ namespace IRISProjectImporter
     partial class MainForm : Form
     {
 
+        bool _isRunning;
         Logger _logger;
         ProgressBarManager _pbm;
 
@@ -21,17 +22,20 @@ namespace IRISProjectImporter
         {
             InitializeComponent();
 
+            _isRunning = false;
             _logger = new Logger(logTextBox);
             _pbm = new ProgressBarManager(progressBar);
 
-            // TODO: zapamietac dane logowania
-            hostTextBox.Text = "localhost";
-            portTextBox.Text = "5432";
-            loginTextBox.Text = "postgres";
-            passwordTextBox.Text = "zaq12wsx";
-            pathTextBox.Text = "C:\\Data_test\\IRISProjectImporter\\dane_test\\zdp_poznan";
-            dbNameComboBox.Items.Add("iris_project_importer");
-            dbNameComboBox.SelectedIndex = 0;
+            if (Properties.Settings.Default.host != string.Empty)
+            {
+                hostTextBox.Text = Properties.Settings.Default.host;
+                portTextBox.Text = Properties.Settings.Default.port;
+                loginTextBox.Text = Properties.Settings.Default.login;
+                passwordTextBox.Text = Properties.Settings.Default.password;
+                pathTextBox.Text = Properties.Settings.Default.pathText;
+                dbNameComboBox.Items.Add(Properties.Settings.Default.dbName);
+                dbNameComboBox.SelectedIndex = 0;
+            }
         }
 
         private async void reloadDbButton_Click(object sender, EventArgs e)
@@ -62,7 +66,6 @@ namespace IRISProjectImporter
                 }
                 catch (Exception ex)
                 {
-                    //_logger.Log(ex.StackTrace);
                     _logger.Log(ex.Message);
                     MessageBox.Show(ex.Message);
                 }
@@ -78,7 +81,7 @@ namespace IRISProjectImporter
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
             folderBrowserDialog.ShowNewFolderButton = false;
             folderBrowserDialog.ShowDialog();
-            if (folderBrowserDialog.SelectedPath != "")
+            if (folderBrowserDialog.SelectedPath != string.Empty)
             {
                 string path = folderBrowserDialog.SelectedPath;
                 pathTextBox.Text = path;
@@ -88,6 +91,10 @@ namespace IRISProjectImporter
 
         private async void startButton_Click(object sender, EventArgs e)
         {
+            SaveSettings();
+
+            _isRunning = true;
+
             // Disabling buttons to prevent spamming
             startButton.Enabled = false;
             reloadDbButton.Enabled = false;
@@ -106,7 +113,7 @@ namespace IRISProjectImporter
                         dbName);
                     #endregion
 
-                    if (!dbName.Equals(""))
+                    if (dbName != string.Empty)
                     {
                         XmlFileReader xmlReader = new XmlFileReader();
 
@@ -117,15 +124,20 @@ namespace IRISProjectImporter
                         string[] indexFilePaths = indexFileManager.GetIndexFilePaths(picFilePaths);
 
                         #region Logger and ProgressBarManager Code
+                        int pbMax = 0;
+                        for (int i = 0; i < indexFilePaths.Length; i++)
+                            pbMax += xmlReader.IndexFileInfoArray(indexFilePaths[i]).Length;
+
+                        _pbm.SetupProgressBar(0, (pbMax) * 10, 10);
                         _pbm.SetProgressBarValue(0);
-                        _pbm.SetProgressBar(0, (indexFilePaths.Length + picFilePaths.Length) * 10, 10);
                         #endregion
 
                         for (int i = 0; i < indexFilePaths.Length; i++)
                         {
-                            _pbm.StepProgressBar();
+                            _logger.Log($"Inserting Index.xml ({i + 1} out of {indexFilePaths.Length})");
                             sqlManager.InsertIndexWithPics(indexFilePaths[i], connectionString);
                         }
+                        _logger.Log("Success.");
                     }
                     else
                     {
@@ -134,7 +146,7 @@ namespace IRISProjectImporter
                 }
                 catch (Exception ex)
                 {
-                    //_logger.Log(ex.StackTrace);
+                    _pbm.SetProgressBarValue(0);
                     _logger.Log(ex.Message);
                     MessageBox.Show(ex.Message);
                 }
@@ -142,6 +154,7 @@ namespace IRISProjectImporter
                 {
                     // Enabling buttons
                     BeginInvoke(new Action(() => {
+                        _isRunning = false;
                         startButton.Enabled = true;
                         reloadDbButton.Enabled = true;
                     }));
@@ -156,8 +169,34 @@ namespace IRISProjectImporter
 
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
-            // TODO: log info if inserting got cancelled
+            if (_isRunning)
+                _logger.Log("WARNING: Inserting interrupted by closing off the window.");
+
             _logger.SaveLogToDir("IRISProjectImporter_Logs");
+        }
+
+        private void SaveSettings()
+        {
+            if (checkBox1.Checked)
+            {
+                Properties.Settings.Default.host = hostTextBox.Text;
+                Properties.Settings.Default.port = portTextBox.Text;
+                Properties.Settings.Default.login = loginTextBox.Text;
+                Properties.Settings.Default.password = passwordTextBox.Text;
+                Properties.Settings.Default.pathText = pathTextBox.Text;
+                Properties.Settings.Default.dbName = dbNameComboBox.Text;
+                Properties.Settings.Default.Save();
+            }
+            else
+            {
+                Properties.Settings.Default.host = string.Empty;
+                Properties.Settings.Default.port = string.Empty;
+                Properties.Settings.Default.login = string.Empty;
+                Properties.Settings.Default.password = string.Empty;
+                Properties.Settings.Default.pathText = string.Empty;
+                Properties.Settings.Default.dbName = string.Empty;
+                Properties.Settings.Default.Save();
+            }
         }
 
     }

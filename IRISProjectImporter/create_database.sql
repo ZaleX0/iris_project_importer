@@ -45,7 +45,7 @@ CREATE TABLE iris_project_info.index_data(
 	route GEOMETRY,
 	begin_time TIMESTAMP WITHOUT TIME ZONE,
 	end_time TIMESTAMP WITHOUT TIME ZONE,
-	elapsed_time TIMESTAMP WITHOUT TIME ZONE,
+	elapsed_time INTERVAL,
 	avg_speed DOUBLE PRECISION,
 	pic_count INTEGER,
 	PRIMARY KEY(index_data_id)
@@ -91,10 +91,6 @@ CREATE TABLE iris_project_info.pic_data(
 		ON UPDATE CASCADE ON DELETE SET NULL
 );
 
-
-
--- triggery
-
 -- TRIGGER ON INSERT index_data
 CREATE OR REPLACE FUNCTION iris_project_info.trigger_tmp_table()
 	RETURNS TRIGGER 
@@ -119,10 +115,8 @@ CREATE TRIGGER trigger_insert_index
 	BEFORE INSERT
 	ON iris_project_info.index_data
 	FOR EACH STATEMENT
-		EXECUTE PROCEDURE iris_project_info.trigger_tmp_table()
-
-
-
+		EXECUTE PROCEDURE iris_project_info.trigger_tmp_table();
+		
 -- TRIGGER ON INSERT pic_data
 CREATE OR REPLACE FUNCTION iris_project_info.trigger_insert_pic_data()
 	RETURNS TRIGGER 
@@ -164,7 +158,7 @@ CREATE OR REPLACE FUNCTION iris_project_info.trigger_insert_pic_data()
 		
 		-- calculating speed_previous
 		IF NEW.time_previous > 0 THEN
-			NEW.speed_previous := NEW.distance_previous / NEW.time_previous;
+			NEW.speed_previous := (NEW.distance_previous / NEW.time_previous) * 3.6; -- przelicznik na km/h
 		ELSE
 			NEW.speed_previous := 0;
 		END IF;
@@ -186,10 +180,8 @@ CREATE TRIGGER trigger_insert_pic
 	BEFORE INSERT
 	ON iris_project_info.pic_data
 	FOR EACH ROW
-		EXECUTE PROCEDURE iris_project_info.trigger_insert_pic_data()
-
-
-
+		EXECUTE PROCEDURE iris_project_info.trigger_insert_pic_data();
+		
 -- TRIGGER ON UPDATE index_data
 CREATE OR REPLACE FUNCTION iris_project_info.trigger_update_index_data()
 	RETURNS TRIGGER 
@@ -224,11 +216,11 @@ CREATE OR REPLACE FUNCTION iris_project_info.trigger_update_index_data()
 			INTO NEW.end_time;
 		
 		-- NEW.elapsed_time
-		SELECT TO_TIMESTAMP(unix_end - unix_begin)
+		SELECT NEW.end_time - NEW.begin_time
 			INTO NEW.elapsed_time;
 		
 		-- NEW.avg_speed
-		SELECT avg(speed_previous) FROM iris_project_info.pic_data
+		SELECT round(avg(speed_previous)::numeric, 1) FROM iris_project_info.pic_data
 		WHERE index_data_id = NEW.index_data_id
 		INTO NEW.avg_speed;
 		
@@ -245,4 +237,4 @@ CREATE TRIGGER trigger_update_index
 	BEFORE UPDATE
 	ON iris_project_info.index_data
 	FOR EACH ROW
-		EXECUTE PROCEDURE iris_project_info.trigger_update_index_data()
+		EXECUTE PROCEDURE iris_project_info.trigger_update_index_data();

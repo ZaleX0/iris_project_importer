@@ -25,7 +25,7 @@ namespace IRISProjectImporter
                 progressBar.PerformStep();
         }
 
-        public void SetProgressBar(int min, int max, int step)
+        public void SetupProgressBar(int min, int max, int step)
         {
             if (progressBar.InvokeRequired)
             {

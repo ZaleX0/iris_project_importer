@@ -106,7 +106,7 @@ namespace IRISProjectImporter
                             #region Logger Code
                             if (_log)
                             {
-                                _logger.Log($"Inserting: {indexes[i].picpath}");
+                                _logger.Log($"Inserting ({i + 1}/{indexes.Length}): {indexes[i].picpath}");
                                 _progressBarManager.StepProgressBar();
                             }
                             #endregion
@@ -200,7 +200,7 @@ namespace IRISProjectImporter
                         }
                         catch (IndexOutOfRangeException)
                         {
-                            throw;
+                            throw new Exception($"WARNING: {indexes[i].picpath} file missing.");
                         }
 
                         #region SQL - UPDATE index
