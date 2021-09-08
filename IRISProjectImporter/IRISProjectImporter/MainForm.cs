@@ -128,24 +128,31 @@ namespace IRISProjectImporter
                         // Getting PIC_*.xml file paths
                         XmlFileReader xmlReader = new XmlFileReader();
                         PICFileManager picFileManager = new PICFileManager();
-                        IndexFileManager indexFileManager = new IndexFileManager();
+                        //IndexFileManager indexFileManager = new IndexFileManager();
                         string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
-                        string[] indexFilePaths = indexFileManager.GetIndexFilePaths(picFilePaths);
+                        //string[] indexFilePaths = indexFileManager.GetIndexFilePaths(picFilePaths);
 
                         #region Logger and ProgressBarManager Code
                         int pbMax = 0;
-                        for (int i = 0; i < indexFilePaths.Length; i++)
-                            pbMax += xmlReader.IndexFileInfoArray(indexFilePaths[i]).Length;
+                        //for (int i = 0; i < indexFilePaths.Length; i++)
+                        //    pbMax += xmlReader.IndexFileInfoArray(indexFilePaths[i]).Length;
 
-                        _pbm.SetupProgressBar(0, (pbMax) * 10, 10);
-                        _pbm.SetProgressBarValue(0);
+                        //_pbm.SetupProgressBar(0, (pbMax) * 10, 10);
+                        //_pbm.SetProgressBarValue(0);
                         #endregion
 
-                        for (int i = 0; i < indexFilePaths.Length; i++)
+                        //for (int i = 0; i < indexFilePaths.Length; i++)
+                        //{
+                        //    _logger.Log($"Inserting Index.xml ({i + 1} out of {indexFilePaths.Length})");
+                        //    sqlManager.InsertIndexWithPics(indexFilePaths[i], connectionString);
+                        //}
+
+                        //for (int i = 0; i < picFilePaths.Length; i++)
+                        for (int i = 0; i < 1; i++)
                         {
-                            _logger.Log($"Inserting Index.xml ({i + 1} out of {indexFilePaths.Length})");
-                            sqlManager.InsertIndexWithPics(indexFilePaths[i], connectionString);
+                            sqlManager.InsertPIC(picFilePaths[i], connectionString);
                         }
+
                         _logger.Log("Success");
                     }
                     else
@@ -156,6 +163,7 @@ namespace IRISProjectImporter
                 catch (Exception ex)
                 {
                     _pbm.SetProgressBarValue(0);
+                    _logger.Log(ex.StackTrace);
                     _logger.Log(ex.Message);
                     MessageBox.Show(ex.Message);
                 }
