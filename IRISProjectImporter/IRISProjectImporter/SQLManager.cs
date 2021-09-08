@@ -55,6 +55,40 @@ namespace IRISProjectImporter
                 return dbList.ToArray();
             }
         }
+        public bool CheckIfSchemaExists(string connectionString)
+        {
+            using (var connection = new NpgsqlConnection(connectionString))
+            {
+                connection.Open();
+                using (var reader = new NpgsqlCommand("SELECT schema_name FROM information_schema.schemata WHERE schema_name = 'iris_project_info';", connection).ExecuteReader())
+                {
+                    string schema = string.Empty;
+                    if (reader.Read())
+                        schema = reader.GetString(0);
+
+                    if (schema != string.Empty)
+                        return true;
+                    else
+                        return false;
+                }
+            }
+        }
+
+        
+
+        public void CreateSchema(string connectionString)
+        {
+            string create_schema_sql = File.ReadAllText(@"sql\create_schema.sql");
+
+            using (var connection = new NpgsqlConnection(connectionString))
+            using (var command = new NpgsqlCommand(create_schema_sql, connection))
+            {
+                connection.Open();
+                command.ExecuteNonQuery();
+            }
+        }
+
+
         public void InsertIndexWithPics(string indexPath, string connectionString)
         {
             using (var connection = new NpgsqlConnection(connectionString))
@@ -100,8 +134,6 @@ namespace IRISProjectImporter
                             string picPath = $"{new FileInfo(indexPath).DirectoryName}\\{indexes[i].picpath}";
                             picPath = new DirectoryInfo(picPath).GetFiles("PIC_*.xml")[0].FullName;
                             PICFileInfo[] pics = xmlReader.PicFileInfoArray(picPath);
-
-                            Console.WriteLine(indexes[i].picpath);
 
                             #region Logger Code
                             if (_log)

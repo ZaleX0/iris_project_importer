@@ -61,7 +61,7 @@ namespace IRISProjectImporter
                     BeginInvoke(new Action(() => {
                         dbNameComboBox.Items.AddRange(dbNames);
                         dbNameComboBox.SelectedIndex = 0;
-                        _logger.Log("Databases realoaded.");
+                        _logger.Log("Databases realoaded");
                     }));
                 }
                 catch (Exception ex)
@@ -115,9 +115,18 @@ namespace IRISProjectImporter
 
                     if (dbName != string.Empty)
                     {
-                        XmlFileReader xmlReader = new XmlFileReader();
+                        // check if schema exists, if not then create it
+                        bool schema = sqlManager.CheckIfSchemaExists(connectionString);
+                        if (!schema)
+                        {
+                            _logger.Log("Schema iris_project_info does not exists. Creating schema...");
+                            // create tables triggers etc.
+                            sqlManager.CreateSchema(connectionString);
+                            _logger.Log("Schema created");
+                        }
 
                         // Getting PIC_*.xml file paths
+                        XmlFileReader xmlReader = new XmlFileReader();
                         PICFileManager picFileManager = new PICFileManager();
                         IndexFileManager indexFileManager = new IndexFileManager();
                         string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
@@ -137,11 +146,11 @@ namespace IRISProjectImporter
                             _logger.Log($"Inserting Index.xml ({i + 1} out of {indexFilePaths.Length})");
                             sqlManager.InsertIndexWithPics(indexFilePaths[i], connectionString);
                         }
-                        _logger.Log("Success.");
+                        _logger.Log("Success");
                     }
                     else
                     {
-                        _logger.Log("No Database selected.");
+                        _logger.Log("No Database selected");
                     }
                 }
                 catch (Exception ex)
@@ -172,7 +181,7 @@ namespace IRISProjectImporter
             if (_isRunning)
                 _logger.Log("WARNING: Inserting interrupted by closing off the window.");
 
-            _logger.SaveLogToDir("IRISProjectImporter_Logs");
+            _logger.SaveLogToDir("logs");
         }
 
         private void SaveSettings()
