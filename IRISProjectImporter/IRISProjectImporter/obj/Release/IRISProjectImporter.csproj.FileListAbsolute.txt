@@ -23,7 +23,6 @@ C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImpo
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Release\System.Threading.Channels.xml
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Release\System.Threading.Tasks.Extensions.xml
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Release\System.ValueTuple.xml
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.csproj.AssemblyReference.cache
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.MainForm.resources
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.Properties.Resources.resources
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.csproj.GenerateResource.cache

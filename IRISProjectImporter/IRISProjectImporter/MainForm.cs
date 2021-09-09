@@ -127,22 +127,22 @@ namespace IRISProjectImporter
                         }
 
                         // Getting PIC_*.xml file paths
+                        _logger.Log("Searching for PIC_*.xml files...");
                         XmlFileReader xmlReader = new XmlFileReader();
                         PICFileManager picFileManager = new PICFileManager();
                         string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
 
                         #region Logger and ProgressBarManager Code
-                        _pbm.SetupProgressBar(0, (picFilePaths.Length) * 10, 10);
+                        _pbm.SetupProgressBar(0, (picFilePaths.Length) * 5, 5);
                         _pbm.SetProgressBarValue(0);
                         #endregion
 
-                        _logger.Log("Connecting to database...");
                         for (int i = 0; i < picFilePaths.Length; i++)
                         {
                             string picpath = xmlReader.GetElementContent(picFilePaths[i], "PicPath");
                             _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
 
-                            sqlManager.InsertPIC(picFilePaths[i], connectionString);
+                            sqlManager.InsertPIC_NEW(picFilePaths[i], connectionString);
                             _pbm.StepProgressBar();
                         }
 

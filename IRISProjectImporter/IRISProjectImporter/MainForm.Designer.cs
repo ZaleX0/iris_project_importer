@@ -265,7 +265,7 @@ namespace IRISProjectImporter
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.Name = "MainForm";
-            this.Text = "IRIS Project Importer";
+            this.Text = "IRIS Project Importer v1.0";
             this.FormClosed += new System.Windows.Forms.FormClosedEventHandler(this.MainForm_FormClosed);
             this.menuStrip1.ResumeLayout(false);
             this.menuStrip1.PerformLayout();

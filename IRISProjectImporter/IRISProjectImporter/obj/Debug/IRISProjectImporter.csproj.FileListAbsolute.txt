@@ -1,13 +1,6 @@
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\IRISProjectImporter.exe.config
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\IRISProjectImporter.exe
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\IRISProjectImporter.pdb
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.AssemblyReference.cache
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.MainForm.resources
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.Properties.Resources.resources
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.GenerateResource.cache
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.CoreCompileInputs.cache
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.exe
-C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.pdb
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\Microsoft.Bcl.AsyncInterfaces.dll
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\Npgsql.dll
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\System.Buffers.dll
@@ -30,4 +23,11 @@ C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImpo
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\System.Threading.Channels.xml
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\System.Threading.Tasks.Extensions.xml
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\bin\Debug\System.ValueTuple.xml
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.MainForm.resources
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.Properties.Resources.resources
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.GenerateResource.cache
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.CoreCompileInputs.cache
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.CopyComplete
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.exe
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.pdb
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Debug\IRISProjectImporter.csproj.AssemblyReference.cache

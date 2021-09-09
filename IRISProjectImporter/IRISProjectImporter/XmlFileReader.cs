@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -24,6 +25,20 @@ namespace IRISProjectImporter
                 reader.ReadToFollowing(item);
             }
             return reader.ReadElementContentAsString();
+        }
+
+        public IndexFileInfo GetIndexByPicPath(string picXmlPath)
+        {
+            DirectoryInfo picDir = new FileInfo(picXmlPath).Directory;
+            DirectoryInfo indexDir = new FileInfo(picXmlPath).Directory.Parent.Parent.Parent;
+            string indexPath = indexDir.GetFiles("Index.xml")[0].FullName;
+            foreach (IndexFileInfo file in ReadAllIndexFileInfo(indexPath))
+            {
+                string indexPicPath = $"{picDir.Parent.Parent.Name}\\{picDir.Parent.Name}\\{picDir.Name}\\";
+                if (file.picpath.Equals(indexPicPath))
+                    return file;
+            }
+            return null;
         }
 
 
@@ -170,6 +185,47 @@ namespace IRISProjectImporter
                 pic.unix_time = r.ReadElementContentAsDouble(); r.Read();
                 pic.pic_id = r.ReadElementContentAsDouble(); r.Read();
                 list.Add(pic);
+            }
+            return list.ToArray();
+        }
+        public PICFileInfo[] PicFileInfoArray_buchst_X(string xmlFilePath)
+        {
+            XmlReader r = XmlReader.Create(xmlFilePath);
+            List<PICFileInfo> list = new List<PICFileInfo>();
+            while (r.ReadToFollowing("IDDROGI"))
+            {
+                PICFileInfo pic = new PICFileInfo(xmlFilePath);
+                pic.id_drogi = r.ReadElementContentAsString(); r.Read();
+                pic.vnk = r.ReadElementContentAsString(); r.Read();
+                pic.nnk = r.ReadElementContentAsString(); r.Read();
+                pic.abs = r.ReadElementContentAsInt(); r.Read();
+                pic.version = r.ReadElementContentAsString(); r.Read();
+                pic.buchst = r.ReadElementContentAsString(); r.Read();
+                pic.station = r.ReadElementContentAsInt(); r.Read();
+                pic.seiher_km = r.ReadElementContentAsInt(); r.Read();
+                pic.filename = r.ReadElementContentAsString(); r.Read();
+                pic.format = r.ReadElementContentAsInt(); r.Read();
+                pic.datum = r.ReadElementContentAsString(); r.Read();
+                pic.lat = r.ReadElementContentAsDouble(); r.Read();
+                pic.latns = r.ReadElementContentAsString(); r.Read();
+                pic.lon = r.ReadElementContentAsDouble(); r.Read();
+                pic.lonew = r.ReadElementContentAsString(); r.Read();
+                pic.alt = r.ReadElementContentAsDouble(); r.Read();
+                pic.heading = r.ReadElementContentAsDouble(); r.Read();
+                pic.picpath = r.ReadElementContentAsString(); r.Read();
+                pic.acc_lat = r.ReadElementContentAsDouble(); r.Read();
+                pic.acc_lon = r.ReadElementContentAsDouble(); r.Read();
+                pic.acc_alt = r.ReadElementContentAsDouble(); r.Read();
+                pic.acc_heading = r.ReadElementContentAsDouble(); r.Read();
+                pic.acc_roll = r.ReadElementContentAsDouble(); r.Read();
+                pic.acc_pitch = r.ReadElementContentAsDouble(); r.Read();
+                pic.roll = r.ReadElementContentAsDouble(); r.Read();
+                pic.pitch = r.ReadElementContentAsDouble(); r.Read();
+                pic.unix_time = r.ReadElementContentAsDouble(); r.Read();
+                pic.pic_id = r.ReadElementContentAsDouble(); r.Read();
+
+                if (pic.buchst.Equals("X"))
+                    list.Add(pic);
             }
             return list.ToArray();
         }
