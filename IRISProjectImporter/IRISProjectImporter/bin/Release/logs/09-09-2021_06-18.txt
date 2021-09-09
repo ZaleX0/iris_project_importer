@@ -1,0 +1,2 @@
+[06:17:19] Success
+[06:18:01] Selected path: C:\Data_test\IRISProjectImporter\dane_test\zdp_poznan\302120001__\PIC\P2147P_1_R_1

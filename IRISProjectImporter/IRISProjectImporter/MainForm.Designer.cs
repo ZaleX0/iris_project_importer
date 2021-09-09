@@ -102,6 +102,7 @@ namespace IRISProjectImporter
             this.portTextBox.Name = "portTextBox";
             this.portTextBox.Size = new System.Drawing.Size(280, 20);
             this.portTextBox.TabIndex = 1;
+            this.portTextBox.Text = "5432";
             // 
             // loginTextBox
             // 

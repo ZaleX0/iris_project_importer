@@ -30,6 +30,7 @@ namespace IRISProjectImporter
                 richTextBox.AppendText(log);
         }
 
+
         public void SaveLogToDir(string dirPath)
         {
             if (richTextBox.TextLength > 0)

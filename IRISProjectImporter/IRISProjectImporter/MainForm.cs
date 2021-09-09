@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Linq;
 using System.Text;
@@ -128,29 +129,21 @@ namespace IRISProjectImporter
                         // Getting PIC_*.xml file paths
                         XmlFileReader xmlReader = new XmlFileReader();
                         PICFileManager picFileManager = new PICFileManager();
-                        //IndexFileManager indexFileManager = new IndexFileManager();
                         string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
-                        //string[] indexFilePaths = indexFileManager.GetIndexFilePaths(picFilePaths);
 
                         #region Logger and ProgressBarManager Code
-                        int pbMax = 0;
-                        //for (int i = 0; i < indexFilePaths.Length; i++)
-                        //    pbMax += xmlReader.IndexFileInfoArray(indexFilePaths[i]).Length;
-
-                        //_pbm.SetupProgressBar(0, (pbMax) * 10, 10);
-                        //_pbm.SetProgressBarValue(0);
+                        _pbm.SetupProgressBar(0, (picFilePaths.Length) * 10, 10);
+                        _pbm.SetProgressBarValue(0);
                         #endregion
 
-                        //for (int i = 0; i < indexFilePaths.Length; i++)
-                        //{
-                        //    _logger.Log($"Inserting Index.xml ({i + 1} out of {indexFilePaths.Length})");
-                        //    sqlManager.InsertIndexWithPics(indexFilePaths[i], connectionString);
-                        //}
-
-                        //for (int i = 0; i < picFilePaths.Length; i++)
-                        for (int i = 0; i < 1; i++)
+                        _logger.Log("Connecting to database...");
+                        for (int i = 0; i < picFilePaths.Length; i++)
                         {
+                            string picpath = xmlReader.GetElementContent(picFilePaths[i], "PicPath");
+                            _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
+
                             sqlManager.InsertPIC(picFilePaths[i], connectionString);
+                            _pbm.StepProgressBar();
                         }
 
                         _logger.Log("Success");
@@ -207,7 +200,7 @@ namespace IRISProjectImporter
             else
             {
                 Properties.Settings.Default.host = string.Empty;
-                Properties.Settings.Default.port = string.Empty;
+                Properties.Settings.Default.port = "5432";
                 Properties.Settings.Default.login = string.Empty;
                 Properties.Settings.Default.password = string.Empty;
                 Properties.Settings.Default.pathText = string.Empty;

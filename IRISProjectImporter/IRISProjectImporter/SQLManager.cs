@@ -450,6 +450,16 @@ namespace IRISProjectImporter
 
         public void InsertPIC(string picPath, string connectionString)
         {
+            try
+            {
+
+            }
+            catch (Exception)
+            {
+
+                throw;
+            }
+
             XmlFileReader xmlReader = new XmlFileReader();
 
             PICFileInfo[] pics = xmlReader.PicFileInfoArray(picPath);
@@ -465,8 +475,6 @@ namespace IRISProjectImporter
                     index = file;
             }
 
-
-            
             using (var connection = new NpgsqlConnection(connectionString))
             {
                 connection.Open();
@@ -488,7 +496,7 @@ namespace IRISProjectImporter
                         "VALUES (gen_random_uuid(), @v01, @v02, @v03, @v04, @v05, @v06, @v07, @v08, @v09, @v10, @v11, @v12, " +
                         "@v13, @v14, @v15, @v16, @v17, @v18, @v19, @v20, @v21, @v22, @v23, @v24, @v25, @v26, @v27, @v28, @v29);";
                     #endregion
-                    
+
                     string indexUUID = "";
 
                     using (var command = new NpgsqlCommand(sql_index, connection))
