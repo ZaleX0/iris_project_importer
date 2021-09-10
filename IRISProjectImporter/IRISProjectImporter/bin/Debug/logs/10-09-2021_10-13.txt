@@ -1,0 +1,123 @@
+[10:12:00] Searching for PIC_*.xml files...
+[10:12:00] Skipping (1/39): PIC\P2147P_1_R_1\3027008_3127006\ Data already exists.
+[10:12:00] Skipping (2/39): PIC\P2147P_1_R_1\3027015_3027008\ Data already exists.
+[10:12:00] Skipping (3/39): PIC\P2147P_1_R_1\3127006_3127140\ Data already exists.
+[10:12:00] Skipping (4/39): PIC\P2394P_1_R_1\3025002_3025008\ Data already exists.
+[10:12:00] Skipping (5/39): PIC\P2394P_1_R_1\3025008_3025009\ Data already exists.
+[10:12:00] Skipping (6/39): PIC\P2394P_1_R_1\3025009_3026012\ Data already exists.
+[10:12:00] Skipping (7/39): PIC\P2394P_1_R_1\3025010_3025002\ Data already exists.
+[10:12:00] Skipping (8/39): PIC\P2394P_1_R_1\3026012_3026013\ Data already exists.
+[10:12:00] Skipping (9/39): PIC\P2394P_1_R_1\3026013_3026003\ Data already exists.
+[10:12:00] Skipping (10/39): PIC\P2408P_1_M_1\3127141_3127002\ Data already exists.
+[10:12:00] Skipping (11/39): PIC\P2408P_1_R_1\3025014_3026006\ Data already exists.
+[10:12:01] Skipping (12/39): PIC\P2408P_1_R_1\3026003_3127005\ Data already exists.
+[10:12:01] Skipping (13/39): PIC\P2408P_1_R_1\3026006_3026003\ Data already exists.
+[10:12:01] Skipping (14/39): PIC\P2408P_1_R_1\3125004_3125179\ Data already exists.
+[10:12:01] Skipping (15/39): PIC\P2408P_1_R_1\3125179_3125180\ Data already exists.
+[10:12:01] Skipping (16/39): PIC\P2408P_1_R_1\3125180_3025014\ Data already exists.
+[10:12:01] Skipping (17/39): PIC\P2408P_1_R_1\3127005_3127141\ Data already exists.
+[10:12:01] Skipping (18/39): PIC\P2408P_1_R_1\3127141_3127002\ Data already exists.
+[10:12:01] Skipping (19/39): PIC\P2409P_1_R_1\3126001_3126005\ Data already exists.
+[10:12:01] Skipping (20/39): PIC\P2409P_1_R_1\3126003_3226009\ Data already exists.
+[10:12:01] Skipping (21/39): PIC\P2409P_1_R_1\3126005_3126003\ Data already exists.
+[10:12:01] Skipping (22/39): PIC\P2409P_1_R_1\3127002_3127004\ Data already exists.
+[10:12:01] Skipping (23/39): PIC\P2409P_1_R_1\3127004_3127010\ Data already exists.
+[10:12:01] Skipping (24/39): PIC\P2409P_1_R_1\3127010_3126001\ Data already exists.
+[10:12:01] Skipping (25/39): PIC\P2409P_1_R_1\3226009_3226035\ Data already exists.
+[10:12:01] Skipping (26/39): PIC\P2409P_1_R_1\3226035_3226011\ Data already exists.
+[10:12:01] Skipping (27/39): PIC\P2410P_1_M_1\3226006_3226004\ Data already exists.
+[10:12:02] Skipping (28/39): PIC\P2410P_1_R_1\3226004A_3226004B\ Data already exists.
+[10:12:02] Skipping (29/39): PIC\P2410P_1_R_1\3226004B_3226004O\ Data already exists.
+[10:12:02] Skipping (30/39): PIC\P2410P_1_R_1\3226004O_3226004A\ Data already exists.
+[10:12:02] Skipping (31/39): PIC\P2429P_1_R_1\3225003_3225007\ Data already exists.
+[10:12:02] Skipping (32/39): PIC\P2429P_1_R_1\3225007_3226004\ Data already exists.
+[10:12:02] Skipping (33/39): PIC\P2429P_1_R_1\3226006_3226012\ Data already exists.
+[10:12:02] Skipping (34/39): PIC\P2429P_1_R_1\3226010_3226031\ Data already exists.
+[10:12:02] Skipping (35/39): PIC\P2429P_1_R_1\3226012_3226001\ Data already exists.
+[10:12:02] Skipping (36/39): PIC\P2429P_1_R_1\3226018_3226010\ Data already exists.
+[10:12:02] Skipping (37/39): PIC\P2435P_1_R_1\3125002_3126007\ Data already exists.
+[10:12:02] Skipping (38/39): PIC\P2435P_1_R_1\3126007_3126004\ Data already exists.
+[10:12:02] Skipping (39/39): PIC\P2435P_1_R_1\3225010_3125002\ Data already exists.
+[10:12:02] Success
+[10:12:25] Searching for PIC_*.xml files...
+[10:12:27] Inserting (1/39): PIC\P2147P_1_R_1\3027008_3127006\
+[10:12:27] Inserting (2/39): PIC\P2147P_1_R_1\3027015_3027008\
+[10:12:27] Inserting (3/39): PIC\P2147P_1_R_1\3127006_3127140\
+[10:12:27] Inserting (4/39): PIC\P2394P_1_R_1\3025002_3025008\
+[10:12:28] Inserting (5/39): PIC\P2394P_1_R_1\3025008_3025009\
+[10:12:28] Inserting (6/39): PIC\P2394P_1_R_1\3025009_3026012\
+[10:12:29] Inserting (7/39): PIC\P2394P_1_R_1\3025010_3025002\
+[10:12:29] Inserting (8/39): PIC\P2394P_1_R_1\3026012_3026013\
+[10:12:29] Inserting (9/39): PIC\P2394P_1_R_1\3026013_3026003\
+[10:12:29] Inserting (10/39): PIC\P2408P_1_M_1\3127141_3127002\
+[10:12:30] Inserting (11/39): PIC\P2408P_1_R_1\3025014_3026006\
+[10:12:31] Inserting (12/39): PIC\P2408P_1_R_1\3026003_3127005\
+[10:12:32] Inserting (13/39): PIC\P2408P_1_R_1\3026006_3026003\
+[10:12:32] Inserting (14/39): PIC\P2408P_1_R_1\3125004_3125179\
+[10:12:32] Inserting (15/39): PIC\P2408P_1_R_1\3125179_3125180\
+[10:12:32] Inserting (16/39): PIC\P2408P_1_R_1\3125180_3025014\
+[10:12:33] Inserting (17/39): PIC\P2408P_1_R_1\3127005_3127141\
+[10:12:33] Inserting (18/39): PIC\P2408P_1_R_1\3127141_3127002\
+[10:12:33] Inserting (19/39): PIC\P2409P_1_R_1\3126001_3126005\
+[10:12:33] Inserting (20/39): PIC\P2409P_1_R_1\3126003_3226009\
+[10:12:34] Inserting (21/39): PIC\P2409P_1_R_1\3126005_3126003\
+[10:12:34] Inserting (22/39): PIC\P2409P_1_R_1\3127002_3127004\
+[10:12:34] Inserting (23/39): PIC\P2409P_1_R_1\3127004_3127010\
+[10:12:35] Inserting (24/39): PIC\P2409P_1_R_1\3127010_3126001\
+[10:12:35] Inserting (25/39): PIC\P2409P_1_R_1\3226009_3226035\
+[10:12:35] Inserting (26/39): PIC\P2409P_1_R_1\3226035_3226011\
+[10:12:35] Inserting (27/39): PIC\P2410P_1_M_1\3226006_3226004\
+[10:12:35] Inserting (28/39): PIC\P2410P_1_R_1\3226004A_3226004B\
+[10:12:35] Inserting (29/39): PIC\P2410P_1_R_1\3226004B_3226004O\
+[10:12:35] Inserting (30/39): PIC\P2410P_1_R_1\3226004O_3226004A\
+[10:12:36] Inserting (31/39): PIC\P2429P_1_R_1\3225003_3225007\
+[10:12:36] Inserting (32/39): PIC\P2429P_1_R_1\3225007_3226004\
+[10:12:37] Inserting (33/39): PIC\P2429P_1_R_1\3226006_3226012\
+[10:12:37] Inserting (34/39): PIC\P2429P_1_R_1\3226010_3226031\
+[10:12:37] Inserting (35/39): PIC\P2429P_1_R_1\3226012_3226001\
+[10:12:38] Inserting (36/39): PIC\P2429P_1_R_1\3226018_3226010\
+[10:12:39] Inserting (37/39): PIC\P2435P_1_R_1\3125002_3126007\
+[10:12:40] Inserting (38/39): PIC\P2435P_1_R_1\3126007_3126004\
+[10:12:40] Inserting (39/39): PIC\P2435P_1_R_1\3225010_3125002\
+[10:12:40] Success
+[10:12:47] Searching for PIC_*.xml files...
+[10:12:48] Inserting (1/39): PIC\P2147P_1_R_1\3027008_3127006\
+[10:12:48] Inserting (2/39): PIC\P2147P_1_R_1\3027015_3027008\
+[10:12:49] Inserting (3/39): PIC\P2147P_1_R_1\3127006_3127140\
+[10:12:49] Inserting (4/39): PIC\P2394P_1_R_1\3025002_3025008\
+[10:12:49] Inserting (5/39): PIC\P2394P_1_R_1\3025008_3025009\
+[10:12:50] Inserting (6/39): PIC\P2394P_1_R_1\3025009_3026012\
+[10:12:51] Inserting (7/39): PIC\P2394P_1_R_1\3025010_3025002\
+[10:12:51] Inserting (8/39): PIC\P2394P_1_R_1\3026012_3026013\
+[10:12:51] Inserting (9/39): PIC\P2394P_1_R_1\3026013_3026003\
+[10:12:51] Inserting (10/39): PIC\P2408P_1_M_1\3127141_3127002\
+[10:12:51] Inserting (11/39): PIC\P2408P_1_R_1\3025014_3026006\
+[10:12:53] Inserting (12/39): PIC\P2408P_1_R_1\3026003_3127005\
+[10:12:53] Inserting (13/39): PIC\P2408P_1_R_1\3026006_3026003\
+[10:12:54] Inserting (14/39): PIC\P2408P_1_R_1\3125004_3125179\
+[10:12:54] Inserting (15/39): PIC\P2408P_1_R_1\3125179_3125180\
+[10:12:54] Inserting (16/39): PIC\P2408P_1_R_1\3125180_3025014\
+[10:12:55] Inserting (17/39): PIC\P2408P_1_R_1\3127005_3127141\
+[10:12:55] Inserting (18/39): PIC\P2408P_1_R_1\3127141_3127002\
+[10:12:55] Inserting (19/39): PIC\P2409P_1_R_1\3126001_3126005\
+[10:12:55] Inserting (20/39): PIC\P2409P_1_R_1\3126003_3226009\
+[10:12:56] Inserting (21/39): PIC\P2409P_1_R_1\3126005_3126003\
+[10:12:56] Inserting (22/39): PIC\P2409P_1_R_1\3127002_3127004\
+[10:12:56] Inserting (23/39): PIC\P2409P_1_R_1\3127004_3127010\
+[10:12:57] Inserting (24/39): PIC\P2409P_1_R_1\3127010_3126001\
+[10:12:57] Skipping (25/39): PIC\P2409P_1_R_1\3226009_3226035\ Data already exists.
+[10:12:57] Skipping (26/39): PIC\P2409P_1_R_1\3226035_3226011\ Data already exists.
+[10:12:57] Skipping (27/39): PIC\P2410P_1_M_1\3226006_3226004\ Data already exists.
+[10:12:57] Skipping (28/39): PIC\P2410P_1_R_1\3226004A_3226004B\ Data already exists.
+[10:12:57] Skipping (29/39): PIC\P2410P_1_R_1\3226004B_3226004O\ Data already exists.
+[10:12:57] Skipping (30/39): PIC\P2410P_1_R_1\3226004O_3226004A\ Data already exists.
+[10:12:57] Skipping (31/39): PIC\P2429P_1_R_1\3225003_3225007\ Data already exists.
+[10:12:57] Skipping (32/39): PIC\P2429P_1_R_1\3225007_3226004\ Data already exists.
+[10:12:57] Skipping (33/39): PIC\P2429P_1_R_1\3226006_3226012\ Data already exists.
+[10:12:57] Skipping (34/39): PIC\P2429P_1_R_1\3226010_3226031\ Data already exists.
+[10:12:57] Skipping (35/39): PIC\P2429P_1_R_1\3226012_3226001\ Data already exists.
+[10:12:57] Skipping (36/39): PIC\P2429P_1_R_1\3226018_3226010\ Data already exists.
+[10:12:57] Skipping (37/39): PIC\P2435P_1_R_1\3125002_3126007\ Data already exists.
+[10:12:57] Skipping (38/39): PIC\P2435P_1_R_1\3126007_3126004\ Data already exists.
+[10:12:57] Skipping (39/39): PIC\P2435P_1_R_1\3225010_3125002\ Data already exists.
+[10:12:57] Success

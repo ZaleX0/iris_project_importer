@@ -84,9 +84,9 @@ namespace IRISProjectImporter
             folderBrowserDialog.ShowDialog();
             if (folderBrowserDialog.SelectedPath != string.Empty)
             {
-                string path = folderBrowserDialog.SelectedPath;
+                string path = folderBrowserDialog.SelectedPath + "\\";
                 pathTextBox.Text = path;
-                _logger.Log($"Selected path: {folderBrowserDialog.SelectedPath}");
+                _logger.Log($"Selected path: {path}");
             }
         }
 
@@ -104,7 +104,7 @@ namespace IRISProjectImporter
                 try
                 {
                     #region SQLManager, dbName and connectionString
-                    SQLManager sqlManager = new SQLManager(_logger, _pbm);
+                    SQLManager sqlManager = new SQLManager(this);
                     string dbName = (string) Invoke(new Func<string>(() => dbNameComboBox.Text));
                     string connectionString = sqlManager.GetConnectionString(
                         hostTextBox.Text,
@@ -121,8 +121,7 @@ namespace IRISProjectImporter
                         if (!schema)
                         {
                             _logger.Log("Schema iris_project_info does not exists. Creating schema...");
-                            // create tables triggers etc.
-                            sqlManager.CreateSchema(connectionString);
+                            sqlManager.CreateSchema(connectionString); // create tables triggers etc.
                             _logger.Log("Schema created");
                         }
 
@@ -130,22 +129,34 @@ namespace IRISProjectImporter
                         _logger.Log("Searching for PIC_*.xml files...");
                         XmlFileReader xmlReader = new XmlFileReader();
                         PICFileManager picFileManager = new PICFileManager();
-                        string[] picFilePaths = picFileManager.GetPICFilePaths(pathTextBox.Text);
 
-                        #region Logger and ProgressBarManager Code
-                        _pbm.SetupProgressBar(0, (picFilePaths.Length) * 5, 5);
+                        string path = pathTextBox.Text;
+                        path = path[path.Length - 1] == '\\' ? path : path + '\\'; // if last char is not '\' then add it
+                        string[] picFilePaths = picFileManager.GetPICFilePaths(path);
+
+                        _pbm.SetupProgressBar(0, (picFilePaths.Length) * 10, 10);
                         _pbm.SetProgressBarValue(0);
-                        #endregion
 
                         for (int i = 0; i < picFilePaths.Length; i++)
                         {
                             string picpath = xmlReader.GetElementContent(picFilePaths[i], "PicPath");
-                            _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
 
-                            sqlManager.InsertPIC_NEW(picFilePaths[i], connectionString);
+                            // Importing into db and returning result (insert or skip)
+                            switch (sqlManager.InsertPIC(picFilePaths[i], connectionString))
+                            {
+                                case SQLManager.InsertPICResult.Insert:
+                                    _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
+                                    break;
+
+                                case SQLManager.InsertPICResult.Skip:
+                                    _logger.Log($"Skip ({i + 1}/{picFilePaths.Length}): {picpath} Data already exists");
+                                    break;
+
+                                default:
+                                    break;
+                            }
                             _pbm.StepProgressBar();
                         }
-
                         _logger.Log("Success");
                     }
                     else
@@ -172,18 +183,15 @@ namespace IRISProjectImporter
             });
         }
 
-        private void closeToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            Close();
-        }
-
         private void MainForm_FormClosed(object sender, FormClosedEventArgs e)
         {
             if (_isRunning)
-                _logger.Log("WARNING: Inserting interrupted by closing off the window.");
+                _logger.Log("WARNING: Importing interrupted by closing off the window.");
 
             _logger.SaveLogToDir("logs");
         }
+
+
 
         private void SaveSettings()
         {

@@ -1,0 +1,5 @@
+[07:58:39] Searching for PIC_*.xml files...
+[07:58:39] Inserting (1/39): PIC\P2147P_1_R_1\3027008_3127006\
+[07:58:51]    w IRISProjectImporter.SQLManager.InsertPIC_NEW(String picPath, String connectionString) w C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\SQLManager.cs:wiersz 401
+   w IRISProjectImporter.MainForm.<startButton_Click>b__6_0() w C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\MainForm.cs:wiersz 145
+[07:58:51] Operation aborted

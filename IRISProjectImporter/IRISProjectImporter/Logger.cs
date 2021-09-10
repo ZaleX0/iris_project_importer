@@ -23,6 +23,8 @@ namespace IRISProjectImporter
         {
             //string log = $"[{DateTime.Now}] {message}\n";
             string log = $"{DateTime.Now:[HH:mm:ss]} {message}\n";
+            
+            Console.Write(log);
 
             if (richTextBox.InvokeRequired)
                 richTextBox.BeginInvoke(new Action(() => richTextBox.AppendText(log)));

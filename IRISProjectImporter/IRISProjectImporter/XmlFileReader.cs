@@ -188,7 +188,7 @@ namespace IRISProjectImporter
             }
             return list.ToArray();
         }
-        public PICFileInfo[] PicFileInfoArray_buchst_X(string xmlFilePath)
+        public PICFileInfo[] PicFileInfoArray_buchst_XorP(string xmlFilePath)
         {
             XmlReader r = XmlReader.Create(xmlFilePath);
             List<PICFileInfo> list = new List<PICFileInfo>();
@@ -224,7 +224,7 @@ namespace IRISProjectImporter
                 pic.unix_time = r.ReadElementContentAsDouble(); r.Read();
                 pic.pic_id = r.ReadElementContentAsDouble(); r.Read();
 
-                if (pic.buchst.Equals("X"))
+                if (pic.buchst.Equals("X") || pic.buchst.Equals("P"))
                     list.Add(pic);
             }
             return list.ToArray();
