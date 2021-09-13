@@ -76,148 +76,68 @@ CREATE TABLE iris_project_info.pic_data(
 		ON UPDATE CASCADE ON DELETE SET NULL
 );
 
--- TRIGGER ON INSERT index_data
-CREATE OR REPLACE FUNCTION iris_project_info.trigger_tmp_table()
-	RETURNS TRIGGER 
-	LANGUAGE plpgsql
-	AS $$
-	DECLARE
-		unix_time_prev DOUBLE PRECISION;
-	BEGIN
-		DROP TABLE IF EXISTS tmp_table;
-		CREATE TEMPORARY TABLE tmp_table(
-			id SERIAL PRIMARY KEY,
-			buchst CHARACTER VARYING(2),
-			lon DOUBLE PRECISION,
-			lat DOUBLE PRECISION,
-			unix_time DOUBLE PRECISION
-		);
-		RETURN NULL;
-	END;
-	$$
-;
-CREATE TRIGGER trigger_insert_index
-	BEFORE INSERT
-	ON iris_project_info.index_data
-	FOR EACH STATEMENT
-		EXECUTE PROCEDURE iris_project_info.trigger_tmp_table();
-		
--- TRIGGER ON INSERT pic_data
-CREATE OR REPLACE FUNCTION iris_project_info.trigger_insert_pic_data()
-	RETURNS TRIGGER 
-	LANGUAGE plpgsql
-	AS $$
-	DECLARE
-		unix_time_prev DOUBLE PRECISION;
-		buchst_prev CHARACTER VARYING(2);
-		lon_prev DOUBLE PRECISION;
-		lat_prev DOUBLE PRECISION;
-	BEGIN
-		-- getting position
-		NEW.position := st_setsrid(
-			st_geomfromtext('POINT(' || NEW.lon || ' ' || NEW.lat || ')'),
-			4326
-		);
-		
-		-- getting time_previous
-		SELECT unix_time FROM tmp_table ORDER BY id DESC LIMIT 1 INTO unix_time_prev;
-		NEW.time_previous := coalesce(NEW.unix_time - unix_time_prev, 0);
-		
-		SELECT buchst FROM tmp_table ORDER BY id DESC LIMIT 1 INTO buchst_prev;
-		
-		-- getting distance_previous
-		SELECT lon, lat FROM tmp_table ORDER BY id DESC LIMIT 1 INTO lon_prev, lat_prev;
-		NEW.distance_previous := coalesce(
-			st_distance(
-				st_transform(
-					st_setsrid(st_geomfromtext('POINT(' || NEW.lon || ' ' || NEW.lat || ')'), 4326),
-					2180
-				),
-				st_transform(
-					st_setsrid(st_geomfromtext('POINT(' || lon_prev || ' ' || lat_prev || ')'), 4326),
-					2180
-				)
-			),
-			0
-		);
-		
-		-- calculating speed_previous
-		IF NEW.time_previous > 0 THEN
-			NEW.speed_previous := (NEW.distance_previous / NEW.time_previous) * 3.6; -- przelicznik na km/h
-		ELSE
-			NEW.speed_previous := 0;
-		END IF;
-		
-		-- on different camera
-		IF NEW.buchst != buchst_prev THEN
-			NEW.time_previous := 0;
-			NEW.distance_previous := 0;
-		END IF;
-		
-		-- inserting some info to tmp table
-		INSERT INTO tmp_table (buchst, lon, lat, unix_time) VALUES (NEW.buchst, NEW.lon, NEW.lat, NEW.unix_time);
-		
-		RETURN NEW;
-	END;
-	$$
-;
-CREATE TRIGGER trigger_insert_pic
-	BEFORE INSERT
-	ON iris_project_info.pic_data
-	FOR EACH ROW
-		EXECUTE PROCEDURE iris_project_info.trigger_insert_pic_data();
-		
 -- TRIGGER ON UPDATE index_data
-CREATE OR REPLACE FUNCTION iris_project_info.trigger_update_index_data()
+CREATE OR REPLACE FUNCTION iris_project_info.trigger_update_data()
 	RETURNS TRIGGER 
 	LANGUAGE plpgsql
 	AS $$
-	DECLARE
-		unix_begin DOUBLE PRECISION;
-		unix_end DOUBLE PRECISION;
 	BEGIN
-		-- NEW.route
-		SELECT st_makeline(position ORDER BY unix_time) FROM iris_project_info.pic_data
+		-- UPDATE pic_data
+		UPDATE iris_project_info.pic_data SET
+			position = st_setsrid(st_geomfromtext('POINT(' || lon || ' ' || lat || ')'), 4326),
+			time_previous = coalesce(unix_time - tmp.unix_time_prev, 0),
+			distance_previous = coalesce(st_distance(
+				st_transform(st_setsrid(st_geomfromtext('POINT(' || tmp.lon_prev || ' ' || tmp.lat_prev || ')'), 4326), 2180),
+				st_transform(st_setsrid(st_geomfromtext('POINT(' || lon || ' ' || lat || ')'), 4326), 2180)
+				), 0),
+			speed_previous = coalesce(
+				(coalesce(
+					st_distance(
+						st_transform(st_setsrid(st_geomfromtext('POINT(' || tmp.lon_prev || ' ' || tmp.lat_prev || ')'), 4326), 2180),
+						st_transform(st_setsrid(st_geomfromtext('POINT(' || lon || ' ' || lat || ')'), 4326), 2180)
+					), 0) / nullif(coalesce(unix_time - tmp.unix_time_prev, 0), 0) * 3.6
+				), 0)
+			FROM (select pic_data_id as pic,
+				  lag(unix_time) over (order by unix_time) as unix_time_prev,
+				  lag(lon) over (order by unix_time) as lon_prev,
+				  lag(lat) over (order by unix_time) as lat_prev
+				  from iris_project_info.pic_data) tmp
 			WHERE index_data_id = NEW.index_data_id
-			--GROUP BY index_data_id, buchst, station
-			INTO NEW.route;
-		
-		-- NEW.begin_time
-		SELECT unix_time FROM iris_project_info.pic_data
-			WHERE index_data_id = NEW.index_data_id
-			ORDER BY unix_time ASC LIMIT 1
-			INTO unix_begin;
-		
-		SELECT TO_TIMESTAMP(unix_begin)
-			INTO NEW.begin_time;
-	
-		-- NEW.end_time
-		SELECT unix_time FROM iris_project_info.pic_data
-			WHERE index_data_id = NEW.index_data_id
-			ORDER BY unix_time DESC LIMIT 1
-			INTO unix_end;
+			AND pic_data_id = tmp.pic;
+		-- UPDATE index_data
+		NEW.route = (
+			select st_makeline(position order by unix_time)
+			from iris_project_info.pic_data
+			where index_data_id = NEW.index_data_id);
 			
-		SELECT TO_TIMESTAMP(unix_end)
-			INTO NEW.end_time;
+		NEW.begin_time = (
+			select to_timestamp(unix_time)
+			from iris_project_info.pic_data
+			where index_data_id = NEW.index_data_id
+			order by unix_time asc limit 1);
+			
+		NEW.end_time = (
+			select to_timestamp(unix_time)
+			from iris_project_info.pic_data
+			where index_data_id = NEW.index_data_id
+			order by unix_time desc limit 1);
+			
+		NEW.elapsed_time = NEW.end_time - NEW.begin_time;
 		
-		-- NEW.elapsed_time
-		SELECT NEW.end_time - NEW.begin_time
-			INTO NEW.elapsed_time;
-		
-		-- NEW.avg_speed
-		SELECT round(avg(speed_previous)::numeric, 1) FROM iris_project_info.pic_data
-		WHERE index_data_id = NEW.index_data_id
-		INTO NEW.avg_speed;
-		
-		-- NEW.pic_count
-		SELECT count(*) FROM iris_project_info.pic_data
-		WHERE index_data_id = NEW.index_data_id
-		INTO NEW.pic_count;
+		NEW.avg_speed = (
+			select round(avg(speed_previous)::numeric, 1)
+			from iris_project_info.pic_data
+			where index_data_id = NEW.index_data_id);
+			
+		NEW.pic_count = (
+			select count(*)
+			from iris_project_info.pic_data
+			where index_data_id = NEW.index_data_id);
 		
 		RETURN NEW;
 	END;
-	$$
-;
+	$$;
+
 CREATE TRIGGER trigger_update_index
 	BEFORE UPDATE
 	ON iris_project_info.index_data

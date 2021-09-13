@@ -86,16 +86,16 @@ namespace IRISProjectImporter
         }
 
 
-        public InsertPICResult InsertPIC(string picPath, string connectionString)
+        public async Task<InsertPICResult> InsertPIC(string picPath, NpgsqlConnection connection)
         {
             PICFileInfo[] pics = null;
             IndexFileInfo index = null;
 
             bool reading = true;
-            while (reading) 
+            while (reading)
             {
                 #region Read Xml (get PICFileInfo[] and IndexFileInfo)
-                try 
+                try
                 {
                     XmlFileReader xmlReader = new XmlFileReader();
                     pics = xmlReader.PicFileInfoArray_buchst_XorP(picPath);
@@ -138,65 +138,32 @@ namespace IRISProjectImporter
             {
                 try
                 {
-                    using (var connection = new NpgsqlConnection(connectionString))
+                    using (var transaction = connection.BeginTransaction())
                     {
-                        connection.Open();
-                        using (var transaction = connection.BeginTransaction())
-                        {
-                            int picDataCount = CountPicDataByPicPath(index.picpath, connection);
-                            if (picDataCount >= pics.Length) // skip this pic xml
-                            {
-                                return InsertPICResult.Skip;
-                                #region TODO Tworzenie dubli na bazie
-                                //TODO: tworzenie dubli na bazie
+                        int picDataCount = CountPicDataByPicPath(index.picpath, connection);
+                        if (picDataCount >= pics.Length) // skip this pic xml
+                            return InsertPICResult.Skip;
 
-                                //Bad implementation here
-                                //DialogResult dialogResult = (DialogResult) _owner.Invoke(new Func<DialogResult>(() => {
-                                //    return MessageBox.Show(
-                                //        _owner,
-                                //        "Istnieją już w bazie dane z tej ścieżki...",
-                                //        "Uwaga!",
-                                //        MessageBoxButtons.YesNo,
-                                //        MessageBoxIcon.Warning,
-                                //        MessageBoxDefaultButton.Button2
-                                //    );
-                                //}));
-                                //switch (dialogResult)
-                                //{
-                                //    case DialogResult.Yes:
-                                //        break;
+                        else if (picDataCount != 0 && picDataCount % pics.Length != 0) // this is never executed unless someone adds something manually to db
+                            DeletePicDataByPicPath(index.picpath, connection);
 
-                                //    case DialogResult.No:
-                                //        return InsertPICResult.Skip;
+                        // INSERT index_data UUID
+                        string indexUUID = InsertNewIndexUUID(connection);
 
-                                //    default:
-                                //        throw new Exception();
-                                //}
-                                #endregion
-                            }
-                            else if (picDataCount != 0 && picDataCount % pics.Length != 0) // delete existing pics
-                            {
-                                DeletePicDataByPicPath(index.picpath, connection);
-                            }
+                        // INSERT pic_data
+                        if (IsDirectionOpposite(index))
+                            for (int i = pics.Length - 1; i >= 0; i--) // opposite direction -> read xml from the bottom
+                                InsertPicData(pics[i], indexUUID, connection);
 
-                            // INSERT index_data UUID
-                            string indexUUID = InsertNewIndexUUID(connection);
+                        else
+                            for (int i = 0; i < pics.Length; i++)
+                                InsertPicData(pics[i], indexUUID, connection);
 
-                            // INSERT pic_data
-                            if (IsDirectionOpposite(index))
-                                for (int i = pics.Length - 1; i >= 0; i--) // opposite direction -> read xml from the bottom
-                                    InsertPicData(pics[i], indexUUID, connection);
+                        // UPDATE index_data
+                        UpdateIndexData(index, indexUUID, connection);
 
-                            else
-                                for (int i = 0; i < pics.Length; i++)
-                                    InsertPicData(pics[i], indexUUID, connection);
-
-                            // UPDATE index_data
-                            UpdateIndexData(index, indexUUID, connection);
-
-                            // COMMIT
-                            transaction.Commit();
-                        }
+                        // COMMIT
+                        await transaction.CommitAsync();
                     }
                     inserting = false;
                 }
@@ -385,201 +352,121 @@ namespace IRISProjectImporter
 
 
 
-
-        public void InsertPIC_OLD(string picPath, string connectionString)
+        public InsertPICResult InsertPIC_OLD(string picPath, string connectionString)
         {
-            XmlFileReader xmlReader = new XmlFileReader();
-
-            PICFileInfo[] pics = xmlReader.PicFileInfoArray(picPath);
-
-            DirectoryInfo picDir = new FileInfo(picPath).Directory;
-            DirectoryInfo indexDir = new FileInfo(picPath).Directory.Parent.Parent.Parent;
-            string indexPath = indexDir.GetFiles("Index.xml")[0].FullName;
+            PICFileInfo[] pics = null;
             IndexFileInfo index = null;
-            foreach (IndexFileInfo file in xmlReader.ReadAllIndexFileInfo(indexPath))
+
+            bool reading = true;
+            while (reading)
             {
-                string indexPicPath = $@"{picDir.Parent.Parent.Name}\{picDir.Parent.Name}\{picDir.Name}\";
-                if (file.picpath.Equals(indexPicPath))
-                    index = file;
+                #region Read Xml (get PICFileInfo[] and IndexFileInfo)
+                try
+                {
+                    XmlFileReader xmlReader = new XmlFileReader();
+                    pics = xmlReader.PicFileInfoArray_buchst_XorP(picPath);
+                    index = xmlReader.GetIndexByPicPath(picPath);
+
+                    reading = false;
+                }
+                catch (Exception)
+                {
+                    DialogResult dialogResult = (DialogResult) _ownerWindow.Invoke(new Func<DialogResult>(() => {
+                        return MessageBox.Show(
+                            _ownerWindow,
+                            "Wystąpił błąd podczas wczytywania pliku xml.",
+                            "Błąd",
+                            MessageBoxButtons.AbortRetryIgnore,
+                            MessageBoxIcon.Warning,
+                            MessageBoxDefaultButton.Button2
+                        );
+                    }));
+                    switch (dialogResult)
+                    {
+                        case DialogResult.Abort: // Stop reading xml 
+                            throw new Exception("Operation aborted");
+
+                        case DialogResult.Retry: // Retry reading xml
+                            break;
+
+                        case DialogResult.Ignore: // Ignore this pic => exit this method
+                            return InsertPICResult.Skip;
+
+                        default:
+                            throw;
+                    }
+                }
+                #endregion
             }
 
-            using (var connection = new NpgsqlConnection(connectionString))
+            bool inserting = true;
+            while (inserting)
             {
-                connection.Open();
-                using (var transaction = connection.BeginTransaction())
+                try
                 {
-                    // INSERT index
-                    #region SQL - INSERT INTO iris_project_info.index_data...
-                    string sql_index = "INSERT INTO iris_project_info.index_data " +
-                        "(index_data_id) " +
-                        "VALUES (gen_random_uuid()) " +
-                        "RETURNING index_data_id;";
-                    #endregion
-                    // INSERT pic
-                    #region SQL - INSERT INTO iris_project_info.pic_data...
-                    string sql_pic = "INSERT INTO iris_project_info.pic_data " +
-                        "(pic_data_id, index_data_id, id_drogi, vnk, nnk, abs, version, buchst, station, " +
-                        "seiher_km, filename, format, datum, lat, latns, lon, lonew, alt, heading, picpath, " +
-                        "acc_lat, acc_lon, acc_alt, acc_heading, acc_roll, acc_pitch, roll, pitch, unix_time, pic_id) " +
-                        "VALUES (gen_random_uuid(), @v01, @v02, @v03, @v04, @v05, @v06, @v07, @v08, @v09, @v10, @v11, @v12, " +
-                        "@v13, @v14, @v15, @v16, @v17, @v18, @v19, @v20, @v21, @v22, @v23, @v24, @v25, @v26, @v27, @v28, @v29);";
-                    #endregion
-
-                    string indexUUID = "";
-
-                    using (var command = new NpgsqlCommand(sql_index, connection))
-                    using (var reader = command.ExecuteReader())
+                    using (var connection = new NpgsqlConnection(connectionString))
                     {
-                        if (reader.Read())
-                            indexUUID = reader.GetString(0);
-                    }
-
-                    // INSERT pic
-                    string kierunek = new DirectoryInfo(index.picpath).Parent.Name.Split('_')[2];
-                    if (kierunek.Equals("M"))
-                    {
-                        for (int i = pics.Length - 1; i >= 0; i--)
+                        connection.Open();
+                        using (var transaction = connection.BeginTransaction())
                         {
-                            using (var picCommand = new NpgsqlCommand(sql_pic, connection))
-                            {
-                                picCommand.Parameters.AddWithValue("v01", indexUUID);
-                                #region picCommand.Parameters
-                                picCommand.Parameters.AddWithValue("v02", pics[i].id_drogi);
-                                picCommand.Parameters.AddWithValue("v03", pics[i].vnk);
-                                picCommand.Parameters.AddWithValue("v04", pics[i].nnk);
-                                picCommand.Parameters.AddWithValue("v05", pics[i].abs);
-                                picCommand.Parameters.AddWithValue("v06", pics[i].version);
-                                picCommand.Parameters.AddWithValue("v07", pics[i].buchst);
-                                picCommand.Parameters.AddWithValue("v08", pics[i].station);
-                                picCommand.Parameters.AddWithValue("v09", pics[i].seiher_km);
-                                picCommand.Parameters.AddWithValue("v10", pics[i].filename);
-                                picCommand.Parameters.AddWithValue("v11", pics[i].format);
-                                picCommand.Parameters.AddWithValue("v12", DateTime.Parse(pics[i].datum));
-                                picCommand.Parameters.AddWithValue("v13", pics[i].lat);
-                                picCommand.Parameters.AddWithValue("v14", pics[i].latns);
-                                picCommand.Parameters.AddWithValue("v15", pics[i].lon);
-                                picCommand.Parameters.AddWithValue("v16", pics[i].lonew);
-                                picCommand.Parameters.AddWithValue("v17", pics[i].alt);
-                                picCommand.Parameters.AddWithValue("v18", pics[i].heading);
-                                picCommand.Parameters.AddWithValue("v19", pics[i].picpath);
-                                picCommand.Parameters.AddWithValue("v20", pics[i].acc_lat);
-                                picCommand.Parameters.AddWithValue("v21", pics[i].acc_lon);
-                                picCommand.Parameters.AddWithValue("v22", pics[i].acc_alt);
-                                picCommand.Parameters.AddWithValue("v23", pics[i].acc_heading);
-                                picCommand.Parameters.AddWithValue("v24", pics[i].acc_roll);
-                                picCommand.Parameters.AddWithValue("v25", pics[i].acc_pitch);
-                                picCommand.Parameters.AddWithValue("v26", pics[i].roll);
-                                picCommand.Parameters.AddWithValue("v27", pics[i].pitch);
-                                picCommand.Parameters.AddWithValue("v28", pics[i].unix_time);
-                                picCommand.Parameters.AddWithValue("v29", pics[i].pic_id);
-                                #endregion
-                                picCommand.ExecuteNonQuery();
-                            }
+                            int picDataCount = CountPicDataByPicPath(index.picpath, connection);
+                            if (picDataCount >= pics.Length) // skip this pic xml
+                                return InsertPICResult.Skip;
+
+                            else if (picDataCount != 0 && picDataCount % pics.Length != 0) // this is never executed unless someone adds something manually to db
+                                DeletePicDataByPicPath(index.picpath, connection);
+
+                            // INSERT index_data UUID
+                            string indexUUID = InsertNewIndexUUID(connection);
+
+                            // INSERT pic_data
+                            if (IsDirectionOpposite(index))
+                                for (int i = pics.Length - 1; i >= 0; i--) // opposite direction -> read xml from the bottom
+                                    InsertPicData(pics[i], indexUUID, connection);
+
+                            else
+                                for (int i = 0; i < pics.Length; i++)
+                                    InsertPicData(pics[i], indexUUID, connection);
+
+                            // UPDATE index_data
+                            UpdateIndexData(index, indexUUID, connection);
+
+                            // COMMIT
+                            transaction.Commit();
                         }
                     }
-                    else
+                    inserting = false;
+                }
+                catch (Exception)
+                {
+                    DialogResult dialogResult = (DialogResult) _ownerWindow.Invoke(new Func<DialogResult>(() => {
+                        return MessageBox.Show(
+                            _ownerWindow,
+                            "Wystąpił błąd połączenia z bazą danych.",
+                            "Błąd",
+                            MessageBoxButtons.AbortRetryIgnore,
+                            MessageBoxIcon.Error,
+                            MessageBoxDefaultButton.Button2
+                        );
+                    }));
+                    switch (dialogResult)
                     {
-                        for (int i = 0; i < pics.Length; i++)
-                        {
-                            using (var picCommand = new NpgsqlCommand(sql_pic, connection))
-                            {
-                                picCommand.Parameters.AddWithValue("v01", indexUUID);
-                                #region picCommand.Parameters
-                                picCommand.Parameters.AddWithValue("v02", pics[i].id_drogi);
-                                picCommand.Parameters.AddWithValue("v03", pics[i].vnk);
-                                picCommand.Parameters.AddWithValue("v04", pics[i].nnk);
-                                picCommand.Parameters.AddWithValue("v05", pics[i].abs);
-                                picCommand.Parameters.AddWithValue("v06", pics[i].version);
-                                picCommand.Parameters.AddWithValue("v07", pics[i].buchst);
-                                picCommand.Parameters.AddWithValue("v08", pics[i].station);
-                                picCommand.Parameters.AddWithValue("v09", pics[i].seiher_km);
-                                picCommand.Parameters.AddWithValue("v10", pics[i].filename);
-                                picCommand.Parameters.AddWithValue("v11", pics[i].format);
-                                picCommand.Parameters.AddWithValue("v12", DateTime.Parse(pics[i].datum));
-                                picCommand.Parameters.AddWithValue("v13", pics[i].lat);
-                                picCommand.Parameters.AddWithValue("v14", pics[i].latns);
-                                picCommand.Parameters.AddWithValue("v15", pics[i].lon);
-                                picCommand.Parameters.AddWithValue("v16", pics[i].lonew);
-                                picCommand.Parameters.AddWithValue("v17", pics[i].alt);
-                                picCommand.Parameters.AddWithValue("v18", pics[i].heading);
-                                picCommand.Parameters.AddWithValue("v19", pics[i].picpath);
-                                picCommand.Parameters.AddWithValue("v20", pics[i].acc_lat);
-                                picCommand.Parameters.AddWithValue("v21", pics[i].acc_lon);
-                                picCommand.Parameters.AddWithValue("v22", pics[i].acc_alt);
-                                picCommand.Parameters.AddWithValue("v23", pics[i].acc_heading);
-                                picCommand.Parameters.AddWithValue("v24", pics[i].acc_roll);
-                                picCommand.Parameters.AddWithValue("v25", pics[i].acc_pitch);
-                                picCommand.Parameters.AddWithValue("v26", pics[i].roll);
-                                picCommand.Parameters.AddWithValue("v27", pics[i].pitch);
-                                picCommand.Parameters.AddWithValue("v28", pics[i].unix_time);
-                                picCommand.Parameters.AddWithValue("v29", pics[i].pic_id);
-                                #endregion
-                                picCommand.ExecuteNonQuery();
-                            }
-                        }
-                    }
+                        case DialogResult.Abort: // Stop inserting pics
+                            throw new Exception("Operation aborted");
 
-                    // UPDATE index
-                    #region SQL - UPDATE index
-                    string sql_update_index = "UPDATE iris_project_info.index_data " +
-                        "SET vnk = @p01," +
-                        "nnk = @p02," +
-                        "von_stat = @p03," +
-                        "bis_stat = @p04," +
-                        "richtung = @p05," +
-                        "cam = @p06," +
-                        "datum = @p07," +
-                        "version = @p08," +
-                        "bemerkung = @p09," +
-                        "volume = @p10," +
-                        "picpath = @p11," +
-                        "v_seither_km = @p12," +
-                        "n_seither_km = @p13," +
-                        "abs = @p14," +
-                        "str_bez = @p15," +
-                        "laenge = @p16," +
-                        "kierunek = @p17," +
-                        "nrodc = @p18," +
-                        "km_lokp = @p19," +
-                        "km_lokk = @p20," +
-                        "km_globp = @p21," +
-                        "km_globk = @p22," +
-                        "phoml = @p23 " +
-                        $"WHERE index_data_id = '{indexUUID}'; ";
-                    #endregion
-                    using (var indexCommand = new NpgsqlCommand(sql_update_index, connection))
-                    {
-                        #region indexCommand.Parameters
-                        indexCommand.Parameters.AddWithValue("p01", index.vnk);
-                        indexCommand.Parameters.AddWithValue("p02", index.nnk);
-                        indexCommand.Parameters.AddWithValue("p03", index.von_stat);
-                        indexCommand.Parameters.AddWithValue("p04", index.bis_stat);
-                        indexCommand.Parameters.AddWithValue("p05", index.richtung);
-                        indexCommand.Parameters.AddWithValue("p06", index.cam);
-                        indexCommand.Parameters.AddWithValue("p07", DateTime.Parse(index.datum));
-                        indexCommand.Parameters.AddWithValue("p08", index.version);
-                        indexCommand.Parameters.AddWithValue("p09", index.bemerkung);
-                        indexCommand.Parameters.AddWithValue("p10", index.volume);
-                        indexCommand.Parameters.AddWithValue("p11", index.picpath);
-                        indexCommand.Parameters.AddWithValue("p12", index.v_seither_km);
-                        indexCommand.Parameters.AddWithValue("p13", index.n_seither_km);
-                        indexCommand.Parameters.AddWithValue("p14", index.abs);
-                        indexCommand.Parameters.AddWithValue("p15", index.str_bez);
-                        indexCommand.Parameters.AddWithValue("p16", index.laenge);
-                        indexCommand.Parameters.AddWithValue("p17", index.kierunek);
-                        indexCommand.Parameters.AddWithValue("p18", index.nrodc);
-                        indexCommand.Parameters.AddWithValue("p19", index.km_lokp);
-                        indexCommand.Parameters.AddWithValue("p20", index.km_lokk);
-                        indexCommand.Parameters.AddWithValue("p21", index.km_globp);
-                        indexCommand.Parameters.AddWithValue("p22", index.km_globk);
-                        indexCommand.Parameters.AddWithValue("p23", index.phoml);
-                        #endregion
-                        indexCommand.ExecuteNonQuery();
-                    }
+                        case DialogResult.Retry: // Retry inserting pics
+                            inserting = true;
+                            break;
 
-                    transaction.Commit();
+                        case DialogResult.Ignore: // Ignore this pic => exit this method
+                            return InsertPICResult.Skip;
+
+                        default:
+                            throw;
+                    }
                 }
             }
+            return InsertPICResult.Insert;
         }
     }
 }

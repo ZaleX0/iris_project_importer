@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Npgsql;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
@@ -137,27 +138,35 @@ namespace IRISProjectImporter
                         _pbm.SetupProgressBar(0, (picFilePaths.Length) * 10, 10);
                         _pbm.SetProgressBarValue(0);
 
-                        for (int i = 0; i < picFilePaths.Length; i++)
+                        Stopwatch s = Stopwatch.StartNew();
+                        using (var connection = new NpgsqlConnection(connectionString))
                         {
-                            string picpath = xmlReader.GetElementContent(picFilePaths[i], "PicPath");
-
-                            // Importing into db and returning result (insert or skip)
-                            switch (sqlManager.InsertPIC(picFilePaths[i], connectionString))
+                            connection.Open();
+                            for (int i = 0; i < picFilePaths.Length; i++)
                             {
-                                case SQLManager.InsertPICResult.Insert:
-                                    _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
-                                    break;
+                                string picpath = xmlReader.GetElementContent(picFilePaths[i], "PicPath");
 
-                                case SQLManager.InsertPICResult.Skip:
-                                    _logger.Log($"Skip ({i + 1}/{picFilePaths.Length}): {picpath} Data already exists");
-                                    break;
+                                sqlManager.InsertPIC(picFilePaths[i], connection);
 
-                                default:
-                                    break;
+                                //// Importing into db and returning the result (insert/skip)
+                                //switch (sqlManager.InsertPIC(picFilePaths[i], connection)) // here 
+                                //{
+                                //    case SQLManager.InsertPICResult.Insert:
+                                //        _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
+                                //        break;
+
+                                //    case SQLManager.InsertPICResult.Skip:
+                                //        _logger.Log($"Skip ({i + 1}/{picFilePaths.Length}): {picpath} Data already exists");
+                                //        break;
+
+                                //    default:
+                                //        break;
+                                //}
+                                _pbm.StepProgressBar();
                             }
-                            _pbm.StepProgressBar();
                         }
-                        _logger.Log("Success");
+                        s.Stop();
+                        _logger.Log($"Success! Elapsed ms: {s.ElapsedMilliseconds}");
                     }
                     else
                     {

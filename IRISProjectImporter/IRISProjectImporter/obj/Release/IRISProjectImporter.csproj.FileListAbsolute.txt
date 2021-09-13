@@ -30,3 +30,4 @@ C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImpo
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.csproj.CopyComplete
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.exe
 C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.pdb
+C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\obj\Release\IRISProjectImporter.csproj.AssemblyReference.cache

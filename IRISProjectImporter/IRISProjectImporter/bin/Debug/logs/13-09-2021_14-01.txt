@@ -1,0 +1,16 @@
+[14:01:35] Searching for PIC_*.xml files...
+[14:01:50]    w Npgsql.NpgsqlConnector.<StartUserAction>g__DoStartUserAction|234_0(<>c__DisplayClass234_0& )
+   w Npgsql.NpgsqlConnector.StartUserAction(ConnectorState newState, NpgsqlCommand command, CancellationToken cancellationToken, Boolean attemptPgCancellation)
+   w Npgsql.NpgsqlConnector.<Reset>d__229.MoveNext()
+--- Koniec œladu stosu z poprzedniej lokalizacji, w której wyst¹pi³ wyj¹tek ---
+   w System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   w System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   w Npgsql.NpgsqlConnection.<>c__DisplayClass87_0.<<Close>g__CloseAsync|0>d.MoveNext()
+--- Koniec œladu stosu z poprzedniej lokalizacji, w której wyst¹pi³ wyj¹tek ---
+   w System.Runtime.CompilerServices.TaskAwaiter.ThrowForNonSuccess(Task task)
+   w System.Runtime.CompilerServices.TaskAwaiter.HandleNonSuccessAndDebuggerNotification(Task task)
+   w Npgsql.NpgsqlConnection.Close()
+   w Npgsql.NpgsqlConnection.Dispose(Boolean disposing)
+   w System.ComponentModel.Component.Dispose()
+   w IRISProjectImporter.MainForm.<startButton_Click>b__6_0() w C:\Users\sglowacki\git\iris_project_importer\IRISProjectImporter\IRISProjectImporter\MainForm.cs:wiersz 167
+[14:01:50] The connection is already in state 'Executing'

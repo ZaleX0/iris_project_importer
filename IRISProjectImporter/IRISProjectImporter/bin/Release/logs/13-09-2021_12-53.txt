@@ -1,0 +1,7 @@
+[12:52:48] Searching for PIC_*.xml files...
+[12:52:48] Skip (1/39): PIC\P2147P_1_R_1\3027008_3127006\ Data already exists
+[12:52:48] Skip (2/39): PIC\P2147P_1_R_1\3027015_3027008\ Data already exists
+[12:52:48] Skip (3/39): PIC\P2147P_1_R_1\3127006_3127140\ Data already exists
+[12:52:52] Inserting (4/39): PIC\P2394P_1_R_1\3025002_3025008\
+[12:53:21] Inserting (5/39): PIC\P2394P_1_R_1\3025008_3025009\
+[12:53:22] WARNING: Importing interrupted by closing off the window.
