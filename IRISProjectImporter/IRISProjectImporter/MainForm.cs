@@ -69,7 +69,7 @@ namespace IRISProjectImporter
                 catch (Exception ex)
                 {
                     _logger.Log(ex.Message);
-                    MessageBox.Show(ex.Message);
+                    MessageBox.Show(this, ex.Message);
                 }
                 finally
                 {
@@ -77,7 +77,6 @@ namespace IRISProjectImporter
                 }
             });
         }
-
         private void folderBrowserDialogButton_Click(object sender, EventArgs e)
         {
             FolderBrowserDialog folderBrowserDialog = new FolderBrowserDialog();
@@ -90,7 +89,6 @@ namespace IRISProjectImporter
                 _logger.Log($"Selected path: {path}");
             }
         }
-
         private async void startButton_Click(object sender, EventArgs e)
         {
             SaveSettings();
@@ -105,7 +103,7 @@ namespace IRISProjectImporter
                 try
                 {
                     #region SQLManager, dbName and connectionString
-                    SQLManager sqlManager = new SQLManager(this);
+                    SQLManager sqlManager = new SQLManager(this, _logger);
                     string dbName = (string) Invoke(new Func<string>(() => dbNameComboBox.Text));
                     string connectionString = sqlManager.GetConnectionString(
                         hostTextBox.Text,
@@ -138,6 +136,7 @@ namespace IRISProjectImporter
                         _pbm.SetupProgressBar(0, (picFilePaths.Length) * 10, 10);
                         _pbm.SetProgressBarValue(0);
 
+                        // Importing data
                         Stopwatch s = Stopwatch.StartNew();
                         using (var connection = new NpgsqlConnection(connectionString))
                         {
@@ -146,24 +145,25 @@ namespace IRISProjectImporter
                             {
                                 string picpath = xmlReader.GetElementContent(picFilePaths[i], "PicPath");
 
-                                sqlManager.InsertPIC(picFilePaths[i], connection);
+                                // Importing into db and returning the result (insert/skip)
+                                switch (sqlManager.InsertPIC(picFilePaths[i], connection)) // here 
+                                {
+                                    case SQLManager.InsertPICResult.Insert:
+                                        _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
+                                        break;
 
-                                //// Importing into db and returning the result (insert/skip)
-                                //switch (sqlManager.InsertPIC(picFilePaths[i], connection)) // here 
-                                //{
-                                //    case SQLManager.InsertPICResult.Insert:
-                                //        _logger.Log($"Inserting ({i + 1}/{picFilePaths.Length}): {picpath}");
-                                //        break;
+                                    case SQLManager.InsertPICResult.Skip:
+                                        _logger.Log($"Skip ({i + 1}/{picFilePaths.Length}): {picpath} Data already exists");
+                                        break;
 
-                                //    case SQLManager.InsertPICResult.Skip:
-                                //        _logger.Log($"Skip ({i + 1}/{picFilePaths.Length}): {picpath} Data already exists");
-                                //        break;
-
-                                //    default:
-                                //        break;
-                                //}
+                                    default:
+                                        break;
+                                }
                                 _pbm.StepProgressBar();
                             }
+                            // it is needed to wait because sometimes connection is still executing last transaction
+                            while (connection.FullState.HasFlag(ConnectionState.Executing)) continue;
+                            // connection close
                         }
                         s.Stop();
                         _logger.Log($"Success! Elapsed ms: {s.ElapsedMilliseconds}");

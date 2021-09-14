@@ -8,13 +8,7 @@ namespace IRISProjectImporter
 {
     class IndexFileInfo
     {
-        public IndexFileInfo(string path)
-        {
-            this.path = path;
-        }
-        private string path;
-
-        public string index_data_id { get; set; }
+        public IndexFileInfo() { }
 
         public string vnk { get; set; }
         public string nnk { get; set; }

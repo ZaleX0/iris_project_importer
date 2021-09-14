@@ -48,7 +48,7 @@ namespace IRISProjectImporter
             XmlReader r = XmlReader.Create(xmlFilePath);
             while (r.ReadToFollowing("VNK"))
             {
-                IndexFileInfo index = new IndexFileInfo(xmlFilePath);
+                IndexFileInfo index = new IndexFileInfo();
                 index.vnk           = r.ReadElementContentAsString();   r.Read();
                 index.nnk           = r.ReadElementContentAsString();   r.Read();
                 index.von_stat      = r.ReadElementContentAsInt();      r.Read();
@@ -80,7 +80,7 @@ namespace IRISProjectImporter
             XmlReader r = XmlReader.Create(xmlFilePath);
             while (r.ReadToFollowing("IDDROGI"))
             {
-                PICFileInfo pic = new PICFileInfo(xmlFilePath);
+                PICFileInfo pic = new PICFileInfo();
                 pic.id_drogi    = r.ReadElementContentAsString();  r.Read();
                 pic.vnk         = r.ReadElementContentAsString();  r.Read();
                 pic.nnk         = r.ReadElementContentAsString();  r.Read();
@@ -121,7 +121,7 @@ namespace IRISProjectImporter
             List<IndexFileInfo> list = new List<IndexFileInfo>();
             while (r.ReadToFollowing("VNK"))
             {
-                IndexFileInfo index = new IndexFileInfo(xmlFilePath);
+                IndexFileInfo index = new IndexFileInfo();
                 index.vnk = r.ReadElementContentAsString(); r.Read();
                 index.nnk = r.ReadElementContentAsString(); r.Read();
                 index.von_stat = r.ReadElementContentAsInt(); r.Read();
@@ -155,7 +155,7 @@ namespace IRISProjectImporter
             List<PICFileInfo> list = new List<PICFileInfo>();
             while (r.ReadToFollowing("IDDROGI"))
             {
-                PICFileInfo pic = new PICFileInfo(xmlFilePath);
+                PICFileInfo pic = new PICFileInfo();
                 pic.id_drogi = r.ReadElementContentAsString(); r.Read();
                 pic.vnk = r.ReadElementContentAsString(); r.Read();
                 pic.nnk = r.ReadElementContentAsString(); r.Read();
@@ -194,7 +194,7 @@ namespace IRISProjectImporter
             List<PICFileInfo> list = new List<PICFileInfo>();
             while (r.ReadToFollowing("IDDROGI"))
             {
-                PICFileInfo pic = new PICFileInfo(xmlFilePath);
+                PICFileInfo pic = new PICFileInfo();
                 pic.id_drogi = r.ReadElementContentAsString(); r.Read();
                 pic.vnk = r.ReadElementContentAsString(); r.Read();
                 pic.nnk = r.ReadElementContentAsString(); r.Read();

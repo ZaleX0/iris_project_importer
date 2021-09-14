@@ -8,17 +8,7 @@ namespace IRISProjectImporter
 {
     class PICFileInfo
     {
-        public PICFileInfo(string path)
-        {
-            this.path = path;
-        }
-        private string path;
-        public string IndexXmlFilePath {
-            get { return new PICFileManager().GetIndexFilePath(path); }
-        }
-
-        public string pic_data_id { get; set; }
-        public string index_data_id { get; set; }
+        public PICFileInfo() { }
 
         public string id_drogi { get; set; }
         public string vnk { get; set; }

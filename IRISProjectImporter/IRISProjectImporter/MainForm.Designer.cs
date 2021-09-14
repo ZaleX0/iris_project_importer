@@ -117,7 +117,8 @@ namespace IRISProjectImporter
             // 
             // dbNameComboBox
             // 
-            this.dbNameComboBox.DropDownStyle = System.Windows.Forms.ComboBoxStyle.DropDownList;
+            this.dbNameComboBox.AutoCompleteMode = System.Windows.Forms.AutoCompleteMode.SuggestAppend;
+            this.dbNameComboBox.AutoCompleteSource = System.Windows.Forms.AutoCompleteSource.ListItems;
             this.dbNameComboBox.FormattingEnabled = true;
             this.dbNameComboBox.Location = new System.Drawing.Point(72, 135);
             this.dbNameComboBox.Name = "dbNameComboBox";

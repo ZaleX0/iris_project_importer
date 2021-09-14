@@ -20,11 +20,13 @@ namespace IRISProjectImporter
         }
 
         readonly Form _ownerWindow;
+        readonly Logger _logger;
 
         public SQLManager() { }
-        public SQLManager(Form owner)
+        public SQLManager(Form owner, Logger logger)
         {
             _ownerWindow = owner;
+            _logger = logger;
         }
 
 
@@ -44,7 +46,7 @@ namespace IRISProjectImporter
             {
                 connection.Open();
                 List<string> dbList = new List<string>();
-                var command = new NpgsqlCommand("SELECT datname FROM pg_database", connection);
+                var command = new NpgsqlCommand("SELECT datname FROM pg_database ORDER BY datname;", connection);
                 using (var reader = command.ExecuteReader())
                 {
                     while (reader.Read())
@@ -75,10 +77,8 @@ namespace IRISProjectImporter
         }
         public void CreateSchema(string connectionString)
         {
-            string create_schema_sql = File.ReadAllText(@"sql\create_schema.sql");
-
             using (var connection = new NpgsqlConnection(connectionString))
-            using (var command = new NpgsqlCommand(create_schema_sql, connection))
+            using (var command = new NpgsqlCommand(File.ReadAllText(@"sql\create_schema.sql"), connection))
             {
                 connection.Open();
                 command.ExecuteNonQuery();
@@ -86,7 +86,7 @@ namespace IRISProjectImporter
         }
 
 
-        public async Task<InsertPICResult> InsertPIC(string picPath, NpgsqlConnection connection)
+        public InsertPICResult InsertPIC(string picPath, NpgsqlConnection connection)
         {
             PICFileInfo[] pics = null;
             IndexFileInfo index = null;
@@ -103,8 +103,10 @@ namespace IRISProjectImporter
 
                     reading = false;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    _logger.Log(e.StackTrace);
+                    _logger.Log(e.Message);
                     DialogResult dialogResult = (DialogResult) _ownerWindow.Invoke(new Func<DialogResult>(() => {
                         return MessageBox.Show(
                             _ownerWindow,
@@ -138,6 +140,9 @@ namespace IRISProjectImporter
             {
                 try
                 {
+                    // it is needed to wait because sometimes connection is still executing previous transaction
+                    while (connection.FullState.HasFlag(ConnectionState.Executing)) continue;
+                    // new transaction
                     using (var transaction = connection.BeginTransaction())
                     {
                         int picDataCount = CountPicDataByPicPath(index.picpath, connection);
@@ -162,13 +167,15 @@ namespace IRISProjectImporter
                         // UPDATE index_data
                         UpdateIndexData(index, indexUUID, connection);
 
-                        // COMMIT
-                        await transaction.CommitAsync();
+                        // Commit
+                        transaction.CommitAsync();
                     }
                     inserting = false;
                 }
-                catch (Exception)
+                catch (Exception e)
                 {
+                    _logger.Log(e.StackTrace);
+                    _logger.Log(e.Message);
                     DialogResult dialogResult = (DialogResult) _ownerWindow.Invoke(new Func<DialogResult>(() => {
                         return MessageBox.Show(
                             _ownerWindow,
@@ -350,123 +357,5 @@ namespace IRISProjectImporter
             return direction.Equals("M");
         }
 
-
-
-        public InsertPICResult InsertPIC_OLD(string picPath, string connectionString)
-        {
-            PICFileInfo[] pics = null;
-            IndexFileInfo index = null;
-
-            bool reading = true;
-            while (reading)
-            {
-                #region Read Xml (get PICFileInfo[] and IndexFileInfo)
-                try
-                {
-                    XmlFileReader xmlReader = new XmlFileReader();
-                    pics = xmlReader.PicFileInfoArray_buchst_XorP(picPath);
-                    index = xmlReader.GetIndexByPicPath(picPath);
-
-                    reading = false;
-                }
-                catch (Exception)
-                {
-                    DialogResult dialogResult = (DialogResult) _ownerWindow.Invoke(new Func<DialogResult>(() => {
-                        return MessageBox.Show(
-                            _ownerWindow,
-                            "Wystąpił błąd podczas wczytywania pliku xml.",
-                            "Błąd",
-                            MessageBoxButtons.AbortRetryIgnore,
-                            MessageBoxIcon.Warning,
-                            MessageBoxDefaultButton.Button2
-                        );
-                    }));
-                    switch (dialogResult)
-                    {
-                        case DialogResult.Abort: // Stop reading xml 
-                            throw new Exception("Operation aborted");
-
-                        case DialogResult.Retry: // Retry reading xml
-                            break;
-
-                        case DialogResult.Ignore: // Ignore this pic => exit this method
-                            return InsertPICResult.Skip;
-
-                        default:
-                            throw;
-                    }
-                }
-                #endregion
-            }
-
-            bool inserting = true;
-            while (inserting)
-            {
-                try
-                {
-                    using (var connection = new NpgsqlConnection(connectionString))
-                    {
-                        connection.Open();
-                        using (var transaction = connection.BeginTransaction())
-                        {
-                            int picDataCount = CountPicDataByPicPath(index.picpath, connection);
-                            if (picDataCount >= pics.Length) // skip this pic xml
-                                return InsertPICResult.Skip;
-
-                            else if (picDataCount != 0 && picDataCount % pics.Length != 0) // this is never executed unless someone adds something manually to db
-                                DeletePicDataByPicPath(index.picpath, connection);
-
-                            // INSERT index_data UUID
-                            string indexUUID = InsertNewIndexUUID(connection);
-
-                            // INSERT pic_data
-                            if (IsDirectionOpposite(index))
-                                for (int i = pics.Length - 1; i >= 0; i--) // opposite direction -> read xml from the bottom
-                                    InsertPicData(pics[i], indexUUID, connection);
-
-                            else
-                                for (int i = 0; i < pics.Length; i++)
-                                    InsertPicData(pics[i], indexUUID, connection);
-
-                            // UPDATE index_data
-                            UpdateIndexData(index, indexUUID, connection);
-
-                            // COMMIT
-                            transaction.Commit();
-                        }
-                    }
-                    inserting = false;
-                }
-                catch (Exception)
-                {
-                    DialogResult dialogResult = (DialogResult) _ownerWindow.Invoke(new Func<DialogResult>(() => {
-                        return MessageBox.Show(
-                            _ownerWindow,
-                            "Wystąpił błąd połączenia z bazą danych.",
-                            "Błąd",
-                            MessageBoxButtons.AbortRetryIgnore,
-                            MessageBoxIcon.Error,
-                            MessageBoxDefaultButton.Button2
-                        );
-                    }));
-                    switch (dialogResult)
-                    {
-                        case DialogResult.Abort: // Stop inserting pics
-                            throw new Exception("Operation aborted");
-
-                        case DialogResult.Retry: // Retry inserting pics
-                            inserting = true;
-                            break;
-
-                        case DialogResult.Ignore: // Ignore this pic => exit this method
-                            return InsertPICResult.Skip;
-
-                        default:
-                            throw;
-                    }
-                }
-            }
-            return InsertPICResult.Insert;
-        }
     }
 }
