@@ -11,8 +11,7 @@ namespace IRISProjectImporter
 {
     class Logger
     {
-
-        RichTextBox richTextBox;
+        readonly RichTextBox richTextBox;
 
         public Logger(RichTextBox richTextBox)
         {
@@ -21,7 +20,6 @@ namespace IRISProjectImporter
 
         public void Log(string message)
         {
-            //string log = $"[{DateTime.Now}] {message}\n";
             string log = $"{DateTime.Now:[HH:mm:ss]} {message}\n";
             
             Console.Write(log);

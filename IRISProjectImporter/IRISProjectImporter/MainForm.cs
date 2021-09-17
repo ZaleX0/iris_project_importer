@@ -15,7 +15,6 @@ namespace IRISProjectImporter
 {
     partial class MainForm : Form
     {
-
         bool _isRunning;
         Logger _logger;
         ProgressBarManager _pbm;

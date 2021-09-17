@@ -106,7 +106,8 @@ CREATE OR REPLACE FUNCTION iris_project_info.trigger_update_data()
 				  lag(unix_time) over (order by unix_time) as unix_time_prev,
 				  lag(lon) over (order by unix_time) as lon_prev,
 				  lag(lat) over (order by unix_time) as lat_prev
-				  from iris_project_info.pic_data) tmp
+				  from iris_project_info.pic_data
+				  where index_data_id = NEW.index_data_id) tmp
 			WHERE index_data_id = NEW.index_data_id
 			AND pic_data_id = tmp.pic;
 		-- UPDATE index_data
@@ -130,7 +131,7 @@ CREATE OR REPLACE FUNCTION iris_project_info.trigger_update_data()
 		NEW.elapsed_time = NEW.end_time - NEW.begin_time;
 		--
 		NEW.avg_speed = (
-			select round(avg(speed_previous)::numeric, 1)
+			select round(avg(speed_previous)::numeric, 2)
 			from iris_project_info.pic_data
 			where index_data_id = NEW.index_data_id);
 		--

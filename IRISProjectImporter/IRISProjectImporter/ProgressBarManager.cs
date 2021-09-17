@@ -9,7 +9,7 @@ namespace IRISProjectImporter
 {
     class ProgressBarManager
     {
-        ProgressBar progressBar;
+        readonly ProgressBar progressBar;
 
         public ProgressBarManager(ProgressBar progressBar)
         {
